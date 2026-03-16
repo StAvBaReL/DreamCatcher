@@ -1,0 +1,46 @@
+package com.colman.dreamcatcher.model
+
+import com.google.firebase.firestore.FirebaseFirestore
+
+class FirebaseModel {
+
+    private val db = FirebaseFirestore.getInstance()
+
+    companion object {
+        private const val POSTS_COLLECTION = "posts"
+    }
+
+    fun addPost(post: DreamPost, callback: (error: String?) -> Unit) {
+        db.collection(POSTS_COLLECTION)
+            .document(post.postId)
+            .set(post.toJson)
+            .addOnSuccessListener { callback(null) }
+            .addOnFailureListener { e -> callback(e.message) }
+    }
+
+    fun getAllPosts(since: Long, callback: (List<DreamPost>?, error: String?) -> Unit) {
+        db.collection(POSTS_COLLECTION)
+            .whereGreaterThan(DreamPost.LAST_UPDATED_KEY, since)
+            .get()
+            .addOnSuccessListener { result ->
+                val posts = result.documents.mapNotNull { doc ->
+                    doc.data?.let { DreamPost.fromJson(it) }
+                }
+                callback(posts, null)
+            }
+            .addOnFailureListener { e -> callback(null, e.message) }
+    }
+
+    fun getPostsByUser(uid: String, callback: (List<DreamPost>?, error: String?) -> Unit) {
+        db.collection(POSTS_COLLECTION)
+            .whereEqualTo(DreamPost.AUTHOR_UID_KEY, uid)
+            .get()
+            .addOnSuccessListener { result ->
+                val posts = result.documents.mapNotNull { doc ->
+                    doc.data?.let { DreamPost.fromJson(it) }
+                }
+                callback(posts, null)
+            }
+            .addOnFailureListener { e -> callback(null, e.message) }
+    }
+}
