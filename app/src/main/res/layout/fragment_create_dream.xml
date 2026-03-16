@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="28dp"
+            android:layout_marginTop="16dp">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_moon"
+                android:contentDescription="@null" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_sparkle"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="12dp"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/capture_your_dream"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/purple_primary"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Dream description card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_dark"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/describe_your_dream"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp" />
+
+            <EditText
+                android:id="@+id/etDreamDescription"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:background="@drawable/bg_edit_text"
+                android:padding="12dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/text_secondary"
+                android:hint="@string/dream_description_hint"
+                android:gravity="top|start"
+                android:inputType="textMultiLine"
+                android:layout_marginBottom="16dp" />
+
+            <Button
+                android:id="@+id/btnVisualize"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="@string/visualize_dream"
+                android:background="@drawable/gradient_button"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:stateListAnimator="@null" />
+        </LinearLayout>
+
+        <!-- Image preview card (GONE by default) -->
+        <FrameLayout
+            android:id="@+id/imageCard"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:background="@drawable/bg_image_preview"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/ivGeneratedImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/generated_dream_image"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/pbLoading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/teal_primary"
+                android:visibility="gone" />
+        </FrameLayout>
+
+    </LinearLayout>
+</ScrollView>

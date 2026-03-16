@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">DreamCatcher</string>
+    <string name="nav_feed">Feed</string>
+    <string name="nav_create">Create</string>
+    <string name="nav_profile">Profile</string>
+    <string name="capture_your_dream">Capture Your Dream</string>
+    <string name="describe_your_dream">Describe your dream</string>
+    <string name="dream_description_hint">What did you dream about? Describe the scene, colors, emotions…</string>
+    <string name="visualize_dream">Visualize Dream</string>
+    <string name="generated_dream_image">Generated dream image</string>
+    <string name="feed_coming_soon">Feed coming soon…</string>
+    <string name="profile_coming_soon">Profile coming soon…</string>
 </resources>
