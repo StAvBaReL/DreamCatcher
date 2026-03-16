@@ -48,4 +48,34 @@ object DreamCatcherModel {
             }
         }
     }
+
+    fun getPostById(postId: String, callback: (DreamPost?) -> Unit) {
+        DreamCatcherApplication.executorService.execute {
+            firebaseModel.getPostById(postId) { post ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(post)
+                }
+            }
+        }
+    }
+
+    fun updatePost(post: DreamPost, callback: (Boolean) -> Unit) {
+        DreamCatcherApplication.executorService.execute {
+            firebaseModel.updatePost(post) { success ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(success)
+                }
+            }
+        }
+    }
+
+    fun deletePost(postId: String, callback: (Boolean) -> Unit) {
+        DreamCatcherApplication.executorService.execute {
+            firebaseModel.deletePost(postId) { success ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(success)
+                }
+            }
+        }
+    }
 }

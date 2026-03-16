@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FragmentCreateDreamBinding
@@ -74,6 +75,26 @@ class CreateDreamFragment : Fragment() {
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
             Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
         }
+
+        viewModel.postLoadingState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                LoadingState.LOADING -> {
+                    binding.btnPostDream.isEnabled = false
+                    binding.pbPostLoading.visibility = View.VISIBLE
+                }
+                LoadingState.SUCCESS -> {
+                    findNavController().navigate(R.id.action_createDreamFragment_to_journalFragment)
+                }
+                LoadingState.ERROR -> {
+                    binding.btnPostDream.isEnabled = true
+                    binding.pbPostLoading.visibility = View.GONE
+                }
+                else -> {
+                    binding.btnPostDream.isEnabled = true
+                    binding.pbPostLoading.visibility = View.GONE
+                }
+            }
+        }
     }
 
     private fun setupListeners() {
@@ -81,11 +102,19 @@ class CreateDreamFragment : Fragment() {
             val prompt = binding.etDreamDescription.text.toString()
             viewModel.visualizeDream(prompt)
         }
+
+        binding.btnPostDream.setOnClickListener {
+            val title = binding.etDreamTitle.text.toString()
+            val description = binding.etDreamDescription.text.toString()
+            val imageUrl = viewModel.generatedImageUrl.value ?: ""
+            viewModel.postDream(title, description, imageUrl)
+        }
     }
 
     private fun setIdleState() {
         binding.btnVisualize.isEnabled = true
         binding.imageCard.visibility = View.GONE
+        binding.postSection.visibility = View.GONE
     }
 
     private fun setLoadingState() {
@@ -93,6 +122,7 @@ class CreateDreamFragment : Fragment() {
         binding.imageCard.visibility = View.VISIBLE
         binding.pbLoading.visibility = View.VISIBLE
         binding.ivGeneratedImage.visibility = View.GONE
+        binding.postSection.visibility = View.GONE
     }
 
     private fun setSuccessState() {
@@ -100,6 +130,7 @@ class CreateDreamFragment : Fragment() {
         binding.imageCard.visibility = View.VISIBLE
         binding.pbLoading.visibility = View.GONE
         binding.ivGeneratedImage.visibility = View.VISIBLE
+        binding.postSection.visibility = View.VISIBLE
     }
 
     override fun onDestroyView() {

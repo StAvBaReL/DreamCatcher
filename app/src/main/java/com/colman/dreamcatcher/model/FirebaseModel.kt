@@ -44,4 +44,31 @@ class FirebaseModel {
             }
             .addOnFailureListener { e -> callback(null, e.message) }
     }
+
+    fun getPostById(postId: String, callback: (DreamPost?) -> Unit) {
+        db.collection(POSTS_COLLECTION)
+            .document(postId)
+            .get()
+            .addOnSuccessListener { doc ->
+                val post = doc.data?.let { DreamPost.fromJson(it) }
+                callback(post)
+            }
+            .addOnFailureListener { callback(null) }
+    }
+
+    fun updatePost(post: DreamPost, callback: (Boolean) -> Unit) {
+        db.collection(POSTS_COLLECTION)
+            .document(post.postId)
+            .set(post.toJson)
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
+
+    fun deletePost(postId: String, callback: (Boolean) -> Unit) {
+        db.collection(POSTS_COLLECTION)
+            .document(postId)
+            .delete()
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
 }

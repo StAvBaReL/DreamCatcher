@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.androidx.navigation.safe.args)
 }
 
 android {
@@ -51,6 +52,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.swiperefreshlayout)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     testImplementation(libs.junit)

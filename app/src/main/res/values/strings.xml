@@ -3,6 +3,7 @@
     <string name="nav_feed">Feed</string>
     <string name="nav_create">Create</string>
     <string name="nav_profile">Profile</string>
+    <string name="nav_journal">Journal</string>
     <string name="capture_your_dream">Capture Your Dream</string>
     <string name="describe_your_dream">Describe your dream</string>
     <string name="dream_description_hint">What did you dream about? Describe the scene, colors, emotions…</string>
@@ -10,4 +11,19 @@
     <string name="generated_dream_image">Generated dream image</string>
     <string name="feed_coming_soon">Feed coming soon…</string>
     <string name="profile_coming_soon">Profile coming soon…</string>
+    <string name="post_dream">Post Dream</string>
+    <string name="dream_title_label">Give your dream a title</string>
+    <string name="dream_title_hint">Give your dream a title…</string>
+    <string name="journal_empty">No dreams yet — go create one!</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="delete_dialog_title">Delete this dream?</string>
+    <string name="delete_dialog_message">This cannot be undone.</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="revisualize">Re-visualize</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="post_failed">Post failed. Please try again.</string>
+    <string name="delete_failed">Delete failed.</string>
+    <string name="save_failed">Save failed.</string>
 </resources>

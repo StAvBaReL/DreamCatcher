@@ -114,5 +114,59 @@
                 android:visibility="gone" />
         </FrameLayout>
 
+        <!-- Post section (GONE by default, shown after image is generated) -->
+        <LinearLayout
+            android:id="@+id/postSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_dark"
+            android:padding="16dp"
+            android:layout_marginTop="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dream_title_label"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp" />
+
+            <EditText
+                android:id="@+id/etDreamTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_edit_text"
+                android:padding="12dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/text_secondary"
+                android:hint="@string/dream_title_hint"
+                android:inputType="textCapSentences"
+                android:layout_marginBottom="16dp" />
+
+            <Button
+                android:id="@+id/btnPostDream"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="@string/post_dream"
+                android:background="@drawable/gradient_button"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:stateListAnimator="@null" />
+
+            <ProgressBar
+                android:id="@+id/pbPostLoading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:indeterminateTint="@color/teal_primary"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
     </LinearLayout>
 </ScrollView>

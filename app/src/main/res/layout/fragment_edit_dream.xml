@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Image preview with loading overlay -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:background="@drawable/bg_image_preview"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:id="@+id/ivEditImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/generated_dream_image" />
+
+            <ProgressBar
+                android:id="@+id/pbImageRegen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/teal_primary"
+                android:visibility="gone" />
+
+        </FrameLayout>
+
+        <!-- Edit fields card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_dark"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dream_title_label"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etEditTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_edit_text"
+                android:padding="12dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/text_secondary"
+                android:hint="@string/dream_title_hint"
+                android:inputType="textCapSentences"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/describe_your_dream"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etEditDescription"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:background="@drawable/bg_edit_text"
+                android:padding="12dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/text_secondary"
+                android:hint="@string/dream_description_hint"
+                android:gravity="top|start"
+                android:inputType="textMultiLine"
+                android:layout_marginBottom="16dp" />
+
+            <Button
+                android:id="@+id/btnRevisualize"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="@string/revisualize"
+                android:background="@drawable/bg_card_dark"
+                android:textColor="@color/teal_primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:stateListAnimator="@null" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnSaveChanges"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="@string/save_changes"
+            android:background="@drawable/gradient_button"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:stateListAnimator="@null" />
+
+    </LinearLayout>
+</ScrollView>
