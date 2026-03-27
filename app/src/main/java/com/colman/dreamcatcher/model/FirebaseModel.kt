@@ -1,5 +1,7 @@
 package com.colman.dreamcatcher.model
 
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -17,6 +19,27 @@ class FirebaseModel {
             .set(post.toJson)
             .addOnSuccessListener { callback(null) }
             .addOnFailureListener { e -> callback(e.message) }
+    }
+
+    fun getPostsPaged(
+        limit: Long,
+        after: DocumentSnapshot?,
+        callback: (List<DreamPost>?, lastSnapshot: DocumentSnapshot?, error: String?) -> Unit
+    ) {
+        var query = db.collection(POSTS_COLLECTION)
+            .orderBy(DreamPost.CREATED_AT_KEY, Query.Direction.DESCENDING)
+            .limit(limit)
+        if (after != null) {
+            query = query.startAfter(after)
+        }
+        query.get()
+            .addOnSuccessListener { snapshot ->
+                val posts = snapshot.documents.mapNotNull { doc ->
+                    doc.data?.let { DreamPost.fromJson(it) }
+                }
+                callback(posts, snapshot.documents.lastOrNull(), null)
+            }
+            .addOnFailureListener { e -> callback(null, null, e.message) }
     }
 
     fun getAllPosts(since: Long, callback: (List<DreamPost>?, error: String?) -> Unit) {

@@ -28,4 +28,5 @@
     <string name="save_failed">Save failed.</string>
     <string name="feed_empty">No dreams yet — be the first to post!</string>
     <string name="share_dream">Share</string>
+    <string name="feed_end">You\'ve seen it all!</string>
 </resources>
