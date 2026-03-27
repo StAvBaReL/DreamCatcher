@@ -26,4 +26,6 @@
     <string name="post_failed">Post failed. Please try again.</string>
     <string name="delete_failed">Delete failed.</string>
     <string name="save_failed">Save failed.</string>
+    <string name="feed_empty">No dreams yet — be the first to post!</string>
+    <string name="share_dream">Share</string>
 </resources>
