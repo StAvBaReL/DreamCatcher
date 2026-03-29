@@ -93,4 +93,42 @@ object DreamCatcherModel {
             }
         }
     }
+
+    fun signInWithEmailAndPassword(email: String, password: String, callback: (Boolean, String?) -> Unit) {
+        DreamCatcherApplication.executorService.execute {
+            firebaseModel.signInWithEmailAndPassword(email, password) { success, error ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(success, error)
+                }
+            }
+        }
+    }
+
+    fun createUserWithEmailAndPassword(email: String, password: String, nickname: String, callback: (Boolean, String?) -> Unit) {
+        DreamCatcherApplication.executorService.execute {
+            firebaseModel.createUserWithEmailAndPassword(email, password, nickname) { success, error ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(success, error)
+                }
+            }
+        }
+    }
+
+    fun signInWithGoogle(idToken: String, callback: (Boolean, String?) -> Unit) {
+        DreamCatcherApplication.executorService.execute {
+            firebaseModel.signInWithGoogle(idToken) { success, error ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(success, error)
+                }
+            }
+        }
+    }
+
+    fun signOut() {
+        DreamCatcherApplication.executorService.execute {
+            firebaseModel.signOut()
+        }
+    }
+
+    fun getCurrentUser() = firebaseModel.getCurrentUser()
 }
