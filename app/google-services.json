@@ -1,4 +1,4 @@
-  {
+{
   "project_info": {
     "project_number": "1049448927802",
     "project_id": "dreamcatcher-b45a4",
@@ -12,7 +12,20 @@
           "package_name": "com.colman.dreamcatcher"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1049448927802-up9557vlv6aaa9tdt2oodb4m1nbfh8k7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.colman.dreamcatcher",
+            "certificate_hash": "049c4aff6185ebc1dc34199d8264270369aeaf74"
+          }
+        },
+        {
+          "client_id": "1049448927802-qi20em5ht5rt1hikme78a6mkq32jmtov.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAQngTCx_DL91yixwo1mbArFODEnuGqUC8"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1049448927802-qi20em5ht5rt1hikme78a6mkq32jmtov.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

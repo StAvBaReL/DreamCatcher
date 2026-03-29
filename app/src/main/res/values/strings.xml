@@ -29,4 +29,23 @@
     <string name="feed_empty">No dreams yet — be the first to post!</string>
     <string name="share_dream">Share</string>
     <string name="feed_end">You\'ve seen it all!</string>
+
+    <string name="login_title">Welcome Back</string>
+    <string name="login_subtitle">Enter your dreams again</string>
+    <string name="register_title">Begin Your Journey</string>
+    <string name="register_subtitle">Create your dream journal</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="nickname_label">Nickname</string>
+    <string name="email_hint">dreamer@example.com</string>
+    <string name="password_hint">••••••••</string>
+    <string name="nickname_hint">DreamWalker</string>
+    <string name="login_button">Enter the Dream</string>
+    <string name="register_button">Start Dreaming</string>
+    <string name="continue_with">or continue with</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="new_dreamer">New dreamer? </string>
+    <string name="already_dreaming">Already dreaming? </string>
+    <string name="create_account">Create account</string>
+    <string name="sign_in">Sign in</string>
 </resources>

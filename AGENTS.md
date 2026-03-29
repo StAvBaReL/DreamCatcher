@@ -29,20 +29,13 @@ ProjectName/
 └── gradlew / gradlew.bat
 ```
 
-### Package Structure (Feature-Based)
+### Package Structure (Layer-Based)
 ```
 com.{company}.{projectname}/
-├── base/                    # Application class, constants, type aliases
-├── dao/                     # Data Access Objects (Room database)
-├── models/                  # Data models and repositories
-├── features/                # Feature modules
-│   ├── feature_name/        # Each feature in its own package
-│   │   ├── FeatureFragment.kt
-│   │   ├── FeatureViewModel.kt
-│   │   ├── FeatureAdapter.kt
-│   │   └── FeatureViewHolder.kt
-│   └── another_feature/
-└── utils/                   # Utility classes and helpers
+├── base/                    # Application class, MainActivity, base components
+├── model/                   # Data models, Firebase models, API integrations (e.g., Image generators)
+├── view/                    # Fragments, Adapters, ViewHolders (UI components)
+└── viewmodel/               # ViewModels handling business logic and UI state
 ```
 
 ---
@@ -132,6 +125,9 @@ All features should follow the MVVM (Model-View-ViewModel) pattern:
                     │ (Local)  │        │(Firestore)│       │  Storage │
                     └──────────┘        └──────────┘        └──────────┘
 ```
+
+> **Smart Sync Architecture ("Single Source of Truth"):**
+> The local database acts as the cache and UI source of truth, while the remote database is the master source. Use a **Delta Sync logic** tracking `lastUpdated` timestamps to only fetch modified records.
 
 ### Repository Pattern
 ```kotlin
@@ -273,6 +269,13 @@ class StudentsListViewModel: ViewModel() {
     }
 }
 ```
+
+### Threading & Concurrency
+> ❌ **Do not** spawn new threads manually.
+> ✅ Use a centralized `ExecutorService` (e.g., `Executors.newFixedThreadPool`) and `Handler(Looper.getMainLooper())` for background tasks and UI updates.
+
+### Media & Camera
+> Use `ActivityResultContracts` (like `TakePicturePreview` or `GetContent`) instead of `startActivityForResult` for camera and gallery intents. Store launchers as fragment members.
 
 ---
 
