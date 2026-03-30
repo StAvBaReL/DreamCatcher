@@ -3,6 +3,7 @@ package com.colman.dreamcatcher.model
 import android.os.Handler
 import android.os.Looper
 import com.colman.dreamcatcher.base.DreamCatcherApplication
+import com.google.firebase.firestore.DocumentSnapshot
 
 object DreamCatcherModel {
 
@@ -24,6 +25,20 @@ object DreamCatcherModel {
             firebaseModel.addPost(post) { error ->
                 Handler(Looper.getMainLooper()).post {
                     callback(error)
+                }
+            }
+        }
+    }
+
+    fun getPostsPaged(
+        limit: Long,
+        after: DocumentSnapshot?,
+        callback: (List<DreamPost>?, lastSnapshot: DocumentSnapshot?, error: String?) -> Unit
+    ) {
+        DreamCatcherApplication.executorService.execute {
+            firebaseModel.getPostsPaged(limit, after) { posts, lastSnapshot, error ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(posts, lastSnapshot, error)
                 }
             }
         }

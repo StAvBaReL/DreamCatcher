@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.colman.dreamcatcher.databinding.FragmentFeedBinding
 import com.colman.dreamcatcher.viewmodel.FeedViewModel
 import com.colman.dreamcatcher.viewmodel.LoadingState
@@ -36,13 +37,22 @@ class FeedFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.loadPosts()
+        viewModel.loadFirstPage()
     }
 
     private fun setupRecyclerView() {
         adapter = FeedAdapter()
         binding.rvFeed.layoutManager = LinearLayoutManager(requireContext())
         binding.rvFeed.adapter = adapter
+        binding.rvFeed.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val lastVisible = layoutManager.findLastVisibleItemPosition()
+                if (lastVisible >= adapter.itemCount - 2) {
+                    viewModel.loadNextPage()
+                }
+            }
+        })
     }
 
     private fun setupObservers() {
@@ -54,11 +64,19 @@ class FeedFragment : Fragment() {
         viewModel.loadingState.observe(viewLifecycleOwner) { state ->
             binding.swipeRefresh.isRefreshing = state == LoadingState.LOADING
         }
+
+        viewModel.isLoadingMore.observe(viewLifecycleOwner) { loading ->
+            adapter.footerState = if (loading) FooterState.LOADING else FooterState.HIDDEN
+        }
+
+        viewModel.isEndReached.observe(viewLifecycleOwner) { ended ->
+            if (ended) adapter.footerState = FooterState.END
+        }
     }
 
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
-            viewModel.loadPosts()
+            viewModel.loadFirstPage()
         }
     }
 
