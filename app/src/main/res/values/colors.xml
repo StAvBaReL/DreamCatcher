@@ -2,4 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="bg_dark">#0D0D1A</color>
+    <color name="card_dark">#1A1A2E</color>
+    <color name="purple_primary">#7B2FBE</color>
+    <color name="teal_primary">#00BCD4</color>
+    <color name="glow_purple">#9C27B0</color>
+    <color name="text_secondary">#B0BEC5</color>
+    <color name="edit_text_bg">#252540</color>
 </resources>
