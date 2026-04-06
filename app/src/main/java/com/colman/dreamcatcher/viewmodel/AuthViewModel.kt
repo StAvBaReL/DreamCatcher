@@ -34,7 +34,11 @@ class AuthViewModel : ViewModel() {
 
     fun register(email: String, password: String, nickname: String) {
         _isLoading.value = true
-        DreamCatcherModel.createUserWithEmailAndPassword(email, password, nickname) { success, error ->
+        DreamCatcherModel.createUserWithEmailAndPassword(
+            email,
+            password,
+            nickname
+        ) { success, error ->
             _isLoading.value = false
             if (success) {
                 _registerState.value = true
