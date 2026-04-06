@@ -12,9 +12,13 @@ class PollinationsImageGenerator : DreamImageGenerator {
         .readTimeout(60, TimeUnit.SECONDS)
         .build()
 
-    override fun generateImage(prompt: String, callback: (imageUrl: String?, error: String?) -> Unit) {
-        val encodedPrompt = URLEncoder.encode(prompt, "UTF-8")
-        val url = "https://image.pollinations.ai/prompt/$encodedPrompt?width=768&height=768&nologo=true"
+    override fun generateImage(
+        prompt: String,
+        callback: (imageUrl: String?, error: String?) -> Unit
+    ) {
+        val encodedPrompt = URLEncoder.encode(prompt, "UTF-8").replace("+", "%20")
+        val url =
+            "https://image.pollinations.ai/prompt/$encodedPrompt?width=768&height=768&model=flux"
 
         val request = Request.Builder()
             .url(url)
