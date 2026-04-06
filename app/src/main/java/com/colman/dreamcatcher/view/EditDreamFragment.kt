@@ -53,6 +53,7 @@ class EditDreamFragment : Fragment() {
                     binding.pbImageRegen.visibility = View.VISIBLE
                     binding.btnRevisualize.isEnabled = false
                 }
+
                 LoadingState.SUCCESS -> {
                     binding.pbImageRegen.visibility = View.GONE
                     binding.btnRevisualize.isEnabled = true
@@ -60,11 +61,14 @@ class EditDreamFragment : Fragment() {
                         Glide.with(this).load(url).into(binding.ivEditImage)
                     }
                 }
+
                 LoadingState.ERROR -> {
                     binding.pbImageRegen.visibility = View.GONE
                     binding.btnRevisualize.isEnabled = true
-                    Snackbar.make(binding.root, "Failed to regenerate image", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root, "Failed to regenerate image", Snackbar.LENGTH_SHORT)
+                        .show()
                 }
+
                 else -> {}
             }
         }
@@ -75,8 +79,13 @@ class EditDreamFragment : Fragment() {
                 LoadingState.SUCCESS -> findNavController().popBackStack()
                 LoadingState.ERROR -> {
                     binding.btnSaveChanges.isEnabled = true
-                    Snackbar.make(binding.root, "Save failed. Please try again.", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(
+                        binding.root,
+                        "Save failed. Please try again.",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                 }
+
                 else -> binding.btnSaveChanges.isEnabled = true
             }
         }
