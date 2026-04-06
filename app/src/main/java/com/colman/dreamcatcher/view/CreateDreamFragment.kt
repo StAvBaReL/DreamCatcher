@@ -67,8 +67,9 @@ class CreateDreamFragment : Fragment() {
         }
 
         viewModel.generatedImageUrl.observe(viewLifecycleOwner) { url ->
+            val secureUrl = url?.replace("http://", "https://")
             Glide.with(this)
-                .load(url)
+                .load(secureUrl)
                 .into(binding.ivGeneratedImage)
         }
 
@@ -82,13 +83,16 @@ class CreateDreamFragment : Fragment() {
                     binding.btnPostDream.isEnabled = false
                     binding.pbPostLoading.visibility = View.VISIBLE
                 }
+
                 LoadingState.SUCCESS -> {
                     findNavController().navigate(R.id.action_createDreamFragment_to_journalFragment)
                 }
+
                 LoadingState.ERROR -> {
                     binding.btnPostDream.isEnabled = true
                     binding.pbPostLoading.visibility = View.GONE
                 }
+
                 else -> {
                     binding.btnPostDream.isEnabled = true
                     binding.pbPostLoading.visibility = View.GONE
@@ -121,7 +125,7 @@ class CreateDreamFragment : Fragment() {
         binding.btnVisualize.isEnabled = false
         binding.imageCard.visibility = View.VISIBLE
         binding.pbLoading.visibility = View.VISIBLE
-        binding.ivGeneratedImage.visibility = View.GONE
+        binding.ivGeneratedImage.visibility = View.INVISIBLE
         binding.postSection.visibility = View.GONE
     }
 

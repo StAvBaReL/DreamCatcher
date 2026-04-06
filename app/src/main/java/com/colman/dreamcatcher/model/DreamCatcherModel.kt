@@ -1,5 +1,6 @@
 package com.colman.dreamcatcher.model
 
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import com.colman.dreamcatcher.base.DreamCatcherApplication
@@ -9,6 +10,8 @@ object DreamCatcherModel {
 
     private val imageGenerator: DreamImageGenerator = PollinationsImageGenerator()
     private val firebaseModel = FirebaseModel()
+    private val firebaseAuthModel = FirebaseAuthModel()
+    private val storageModel = StorageModel()
 
     fun generateDreamImage(prompt: String, callback: (imageUrl: String?, error: String?) -> Unit) {
         DreamCatcherApplication.executorService.execute {
@@ -39,16 +42,6 @@ object DreamCatcherModel {
             firebaseModel.getPostsPaged(limit, after) { posts, lastSnapshot, error ->
                 Handler(Looper.getMainLooper()).post {
                     callback(posts, lastSnapshot, error)
-                }
-            }
-        }
-    }
-
-    fun getAllPosts(since: Long, callback: (List<DreamPost>?, error: String?) -> Unit) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseModel.getAllPosts(since) { posts, error ->
-                Handler(Looper.getMainLooper()).post {
-                    callback(posts, error)
                 }
             }
         }
@@ -94,9 +87,13 @@ object DreamCatcherModel {
         }
     }
 
-    fun signInWithEmailAndPassword(email: String, password: String, callback: (Boolean, String?) -> Unit) {
+    fun signInWithEmailAndPassword(
+        email: String,
+        password: String,
+        callback: (Boolean, String?) -> Unit
+    ) {
         DreamCatcherApplication.executorService.execute {
-            firebaseModel.signInWithEmailAndPassword(email, password) { success, error ->
+            firebaseAuthModel.signInWithEmailAndPassword(email, password) { success, error ->
                 Handler(Looper.getMainLooper()).post {
                     callback(success, error)
                 }
@@ -104,9 +101,18 @@ object DreamCatcherModel {
         }
     }
 
-    fun createUserWithEmailAndPassword(email: String, password: String, nickname: String, callback: (Boolean, String?) -> Unit) {
+    fun createUserWithEmailAndPassword(
+        email: String,
+        password: String,
+        nickname: String,
+        callback: (Boolean, String?) -> Unit
+    ) {
         DreamCatcherApplication.executorService.execute {
-            firebaseModel.createUserWithEmailAndPassword(email, password, nickname) { success, error ->
+            firebaseAuthModel.createUserWithEmailAndPassword(
+                email,
+                password,
+                nickname
+            ) { success, error ->
                 Handler(Looper.getMainLooper()).post {
                     callback(success, error)
                 }
@@ -116,7 +122,7 @@ object DreamCatcherModel {
 
     fun signInWithGoogle(idToken: String, callback: (Boolean, String?) -> Unit) {
         DreamCatcherApplication.executorService.execute {
-            firebaseModel.signInWithGoogle(idToken) { success, error ->
+            firebaseAuthModel.signInWithGoogle(idToken) { success, error ->
                 Handler(Looper.getMainLooper()).post {
                     callback(success, error)
                 }
@@ -126,9 +132,46 @@ object DreamCatcherModel {
 
     fun signOut() {
         DreamCatcherApplication.executorService.execute {
-            firebaseModel.signOut()
+            firebaseAuthModel.signOut()
         }
     }
 
-    fun getCurrentUser() = firebaseModel.getCurrentUser()
+    fun getCurrentUser() = firebaseAuthModel.getCurrentUser()
+
+    fun updateUserProfile(
+        displayName: String,
+        photoUrl: Uri?,
+        callback: (Boolean, String?) -> Unit
+    ) {
+        DreamCatcherApplication.executorService.execute {
+            firebaseAuthModel.updateUserProfile(displayName, photoUrl) { success, error ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(success, error)
+                }
+            }
+        }
+    }
+
+    fun uploadProfileImageBytes(bytes: ByteArray, callback: (Uri?, String?) -> Unit) {
+        DreamCatcherApplication.executorService.execute {
+            storageModel.uploadProfileImageBytes(
+                StorageModel.StorageAPI.CLOUDINARY,
+                bytes
+            ) { url, error ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(url, error)
+                }
+            }
+        }
+    }
+
+    fun uploadProfileImage(uri: Uri, callback: (Uri?, String?) -> Unit) {
+        DreamCatcherApplication.executorService.execute {
+            storageModel.uploadProfileImage(StorageModel.StorageAPI.CLOUDINARY, uri) { url, error ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(url, error)
+                }
+            }
+        }
+    }
 }

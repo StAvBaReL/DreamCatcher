@@ -9,7 +9,8 @@ data class DreamPost(
     val description: String = "",
     val imageUrl: String = "",
     val createdAt: Long = 0L,
-    var lastUpdated: Long = 0L
+    var lastUpdated: Long = 0L,
+    var likes: List<String> = emptyList()
 ) {
     companion object {
         const val POST_ID_KEY = "postId"
@@ -21,8 +22,10 @@ data class DreamPost(
         const val IMAGE_URL_KEY = "imageUrl"
         const val CREATED_AT_KEY = "createdAt"
         const val LAST_UPDATED_KEY = "lastUpdated"
+        const val LIKES_KEY = "likes"
 
         fun fromJson(json: Map<String, Any?>): DreamPost {
+            @Suppress("UNCHECKED_CAST")
             return DreamPost(
                 postId = json[POST_ID_KEY] as? String ?: "",
                 authorUid = json[AUTHOR_UID_KEY] as? String ?: "",
@@ -32,7 +35,8 @@ data class DreamPost(
                 description = json[DESCRIPTION_KEY] as? String ?: "",
                 imageUrl = json[IMAGE_URL_KEY] as? String ?: "",
                 createdAt = json[CREATED_AT_KEY] as? Long ?: 0L,
-                lastUpdated = json[LAST_UPDATED_KEY] as? Long ?: 0L
+                lastUpdated = json[LAST_UPDATED_KEY] as? Long ?: 0L,
+                likes = (json[LIKES_KEY] as? List<String>) ?: emptyList()
             )
         }
     }
@@ -47,6 +51,7 @@ data class DreamPost(
             DESCRIPTION_KEY to description,
             IMAGE_URL_KEY to imageUrl,
             CREATED_AT_KEY to createdAt,
-            LAST_UPDATED_KEY to lastUpdated
+            LAST_UPDATED_KEY to lastUpdated,
+            LIKES_KEY to likes
         )
 }
