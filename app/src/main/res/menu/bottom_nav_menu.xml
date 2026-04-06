@@ -7,14 +7,10 @@
         android:title="@string/nav_feed" />
 
     <item
-        android:id="@+id/createDreamFragment"
-        android:icon="@drawable/ic_add"
-        android:title="@string/nav_create" />
-
-    <item
-        android:id="@+id/journalFragment"
-        android:icon="@drawable/ic_journal"
-        android:title="@string/nav_journal" />
+        android:id="@+id/dummy"
+        android:enabled="false"
+        android:icon="@drawable/navigation_empty_icon"
+        android:title="" />
 
     <item
         android:id="@+id/profileFragment"
