@@ -35,10 +35,12 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == TYPE_FOOTER) {
-            val binding = FeedFooterBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            val binding =
+                FeedFooterBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             FeedFooterViewHolder(binding)
         } else {
-            val binding = FeedPostRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            val binding =
+                FeedPostRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             FeedViewHolder(binding)
         }
     }

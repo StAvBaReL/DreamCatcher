@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.colman.dreamcatcher.databinding.FragmentFeedBinding
@@ -16,7 +16,7 @@ class FeedFragment : Fragment() {
 
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: FeedViewModel by viewModels()
+    private val viewModel: FeedViewModel by activityViewModels()
     private lateinit var adapter: FeedAdapter
 
     override fun onCreateView(
@@ -33,11 +33,10 @@ class FeedFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
         setupSwipeRefresh()
-    }
 
-    override fun onResume() {
-        super.onResume()
-        viewModel.loadFirstPage()
+        if (viewModel.posts.value.isNullOrEmpty()) {
+            viewModel.loadFirstPage()
+        }
     }
 
     private fun setupRecyclerView() {
@@ -57,8 +56,12 @@ class FeedFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
-            adapter.posts = posts
-            binding.tvEmpty.visibility = if (posts.isEmpty()) View.VISIBLE else View.GONE
+            binding.rvFeed.post {
+                if (_binding != null) {
+                    adapter.posts = posts
+                    binding.tvEmpty.visibility = if (posts.isEmpty()) View.VISIBLE else View.GONE
+                }
+            }
         }
 
         viewModel.loadingState.observe(viewLifecycleOwner) { state ->
@@ -66,11 +69,21 @@ class FeedFragment : Fragment() {
         }
 
         viewModel.isLoadingMore.observe(viewLifecycleOwner) { loading ->
-            adapter.footerState = if (loading) FooterState.LOADING else FooterState.HIDDEN
+            binding.rvFeed.post {
+                if (_binding != null) {
+                    adapter.footerState = if (loading) FooterState.LOADING else FooterState.HIDDEN
+                }
+            }
         }
 
         viewModel.isEndReached.observe(viewLifecycleOwner) { ended ->
-            if (ended) adapter.footerState = FooterState.END
+            if (ended) {
+                binding.rvFeed.post {
+                    if (_binding != null) {
+                        adapter.footerState = FooterState.END
+                    }
+                }
+            }
         }
     }
 
