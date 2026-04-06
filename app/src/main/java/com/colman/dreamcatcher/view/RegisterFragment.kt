@@ -1,11 +1,11 @@
 package com.colman.dreamcatcher.view
 
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.text.InputType
 import android.widget.Toast
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
@@ -46,17 +46,20 @@ class RegisterFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        val clientIdRes = resources.getIdentifier("default_web_client_id", "string", requireContext().packageName)
+        val clientIdRes =
+            resources.getIdentifier("default_web_client_id", "string", requireContext().packageName)
         val defaultWebClientId = if (clientIdRes != 0) getString(clientIdRes) else ""
 
         var isPasswordVisible = false
         binding.ivTogglePassword.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
             if (isPasswordVisible) {
-                binding.etPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                binding.etPassword.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 binding.ivTogglePassword.alpha = 1.0f
             } else {
-                binding.etPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                binding.etPassword.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 binding.ivTogglePassword.alpha = 0.5f
             }
             binding.etPassword.setSelection(binding.etPassword.text.length)
@@ -80,7 +83,11 @@ class RegisterFragment : Fragment() {
 
         binding.btnGoogle.setOnClickListener {
             if (defaultWebClientId.isEmpty()) {
-                Toast.makeText(context, "Google Sign-In string not found. Did you add google-services.json?", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    "Google Sign-In string not found. Did you add google-services.json?",
+                    Toast.LENGTH_LONG
+                ).show()
                 return@setOnClickListener
             }
             signInWithGoogle(defaultWebClientId)
@@ -106,11 +113,16 @@ class RegisterFragment : Fragment() {
 
                 val credential = result.credential
                 if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                    val googleIdTokenCredential =
+                        GoogleIdTokenCredential.createFrom(credential.data)
                     authViewModel.loginWithGoogle(googleIdTokenCredential.idToken)
                 } else {
                     Log.e("RegisterFragment", "Unexpected type of credential")
-                    Toast.makeText(context, "Sign in failed: unknown credential type", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        "Sign in failed: unknown credential type",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e: GetCredentialException) {
                 Log.e("RegisterFragment", "Sign in failed", e)
