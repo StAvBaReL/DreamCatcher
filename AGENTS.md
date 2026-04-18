@@ -261,18 +261,32 @@ interface OnItemClickListener {
 
 ### ViewModel
 ```kotlin
+enum class LoadingState { IDLE, LOADING, SUCCESS, ERROR }
+
 class StudentsListViewModel: ViewModel() {
+    val loadingState = MutableLiveData(LoadingState.IDLE)
     val data: LiveData<MutableList<Student>> = StudentsRepository.shared.getAllStudents()
 
     fun refreshStudents() {
-        StudentsRepository.shared.refreshStudents()
+        loadingState.value = LoadingState.LOADING
+        StudentsRepository.shared.refreshStudents {
+            loadingState.value = LoadingState.SUCCESS
+        }
     }
 }
 ```
 
 ### Threading & Concurrency
 > ❌ **Do not** spawn new threads manually.
-> ✅ Use a centralized `ExecutorService` (e.g., `Executors.newFixedThreadPool`) and `Handler(Looper.getMainLooper())` for background tasks and UI updates.
+> ✅ Use a centralized `ExecutorService` (e.g., `DreamCatcherApplication.executorService.execute`) and `Handler(Looper.getMainLooper()).post` for background tasks and UI updates:
+> ```kotlin
+> DreamCatcherApplication.executorService.execute {
+>     val result = firebaseModel.someOperation()
+>     Handler(Looper.getMainLooper()).post {
+>         callback(result)
+>     }
+> }
+> ```
 
 ### Media & Camera
 > Use `ActivityResultContracts` (like `TakePicturePreview` or `GetContent`) instead of `startActivityForResult` for camera and gallery intents. Store launchers as fragment members.
@@ -300,10 +314,11 @@ private fun navigateToPinkFragment(student: Student) {
 
 ### Global Context Pattern
 ```kotlin
-class MyApplication: Application() {
+class DreamCatcherApplication: Application() {
 
     companion object Globals {
         var appContext: Context? = null
+        val executorService: ExecutorService = Executors.newFixedThreadPool(4)
     }
 
     override fun onCreate() {
@@ -316,7 +331,7 @@ class MyApplication: Application() {
 Register in `AndroidManifest.xml`:
 ```xml
 <application
-    android:name=".base.MyApplication"
+    android:name=".base.DreamCatcherApplication"
     ...>
 ```
 
@@ -450,9 +465,10 @@ implementation(libs.firebase.auth)
 implementation(libs.firebase.storage)
 ```
 
-### Image Loading
+### Image Loading & Networking
 ```kotlin
-implementation(libs.picasso)  // or Glide
+implementation(libs.glide)
+implementation(libs.okhttp)
 ```
 
 ### Cloud Storage (Images)

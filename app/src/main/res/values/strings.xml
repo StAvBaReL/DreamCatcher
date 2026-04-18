@@ -48,4 +48,19 @@
     <string name="already_dreaming">Already dreaming? </string>
     <string name="create_account">Create account</string>
     <string name="sign_in">Sign in</string>
+    <string name="profile">Profile</string>
+    <string name="todo">TODO</string>
+    <string name="dreamwalker">DreamWalker</string>
+    <string name="dreamer_example_com">dreamer@example.com</string>
+    <string name="_7">7</string>
+    <string name="streak">Streak</string>
+    <string name="save">Save</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="my_dreams">My Dreams</string>
+    <string name="no_dreams_generated_yet">No dreams generated yet.</string>
+    <string name="_3">3</string>
+    <string name="dreams">Dreams</string>
+    <string name="_156">156</string>
+    <string name="likes">Likes</string>
+    <string name="_0">0</string>
 </resources>

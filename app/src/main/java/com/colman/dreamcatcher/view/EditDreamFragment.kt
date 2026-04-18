@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.bumptech.glide.Glide
+import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.databinding.FragmentEditDreamBinding
 import com.colman.dreamcatcher.viewmodel.EditDreamViewModel
 import com.colman.dreamcatcher.viewmodel.LoadingState
@@ -42,7 +42,7 @@ class EditDreamFragment : Fragment() {
             post ?: return@observe
             binding.etEditTitle.setText(post.title)
             binding.etEditDescription.setText(post.description)
-            Glide.with(this)
+            Picasso.get()
                 .load(post.imageUrl)
                 .into(binding.ivEditImage)
         }
@@ -53,18 +53,22 @@ class EditDreamFragment : Fragment() {
                     binding.pbImageRegen.visibility = View.VISIBLE
                     binding.btnRevisualize.isEnabled = false
                 }
+
                 LoadingState.SUCCESS -> {
                     binding.pbImageRegen.visibility = View.GONE
                     binding.btnRevisualize.isEnabled = true
                     viewModel.post.value?.imageUrl?.let { url ->
-                        Glide.with(this).load(url).into(binding.ivEditImage)
+                        Picasso.get().load(url).into(binding.ivEditImage)
                     }
                 }
+
                 LoadingState.ERROR -> {
                     binding.pbImageRegen.visibility = View.GONE
                     binding.btnRevisualize.isEnabled = true
-                    Snackbar.make(binding.root, "Failed to regenerate image", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root, "Failed to regenerate image", Snackbar.LENGTH_SHORT)
+                        .show()
                 }
+
                 else -> {}
             }
         }
@@ -75,8 +79,13 @@ class EditDreamFragment : Fragment() {
                 LoadingState.SUCCESS -> findNavController().popBackStack()
                 LoadingState.ERROR -> {
                     binding.btnSaveChanges.isEnabled = true
-                    Snackbar.make(binding.root, "Save failed. Please try again.", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(
+                        binding.root,
+                        "Save failed. Please try again.",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                 }
+
                 else -> binding.btnSaveChanges.isEnabled = true
             }
         }

@@ -7,7 +7,7 @@ import com.colman.dreamcatcher.model.DreamPost
 
 class EditDreamViewModel : ViewModel() {
 
-    val post = MutableLiveData<DreamPost>()
+    val post = MutableLiveData<DreamPost?>()
     val saveState = MutableLiveData(LoadingState.IDLE)
     val imageRegenState = MutableLiveData(LoadingState.IDLE)
 
@@ -20,7 +20,7 @@ class EditDreamViewModel : ViewModel() {
     fun regenerateImage(prompt: String) {
         if (prompt.isBlank()) return
         imageRegenState.value = LoadingState.LOADING
-        DreamCatcherModel.generateDreamImage(prompt) { url, error ->
+        DreamCatcherModel.generateDreamImage(prompt) { url, _ ->
             if (url != null) {
                 post.value = post.value?.copy(imageUrl = url)
                 imageRegenState.value = LoadingState.SUCCESS

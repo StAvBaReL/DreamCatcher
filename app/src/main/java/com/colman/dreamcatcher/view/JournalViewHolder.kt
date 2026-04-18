@@ -1,9 +1,9 @@
 package com.colman.dreamcatcher.view
 
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.colman.dreamcatcher.databinding.JournalPostRowBinding
 import com.colman.dreamcatcher.model.DreamPost
-import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

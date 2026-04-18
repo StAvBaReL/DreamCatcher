@@ -45,7 +45,8 @@ class JournalFragment : Fragment() {
     private fun setupRecyclerView() {
         adapter = JournalAdapter()
         adapter.onEditClick = { post ->
-            val action = JournalFragmentDirections.actionJournalFragmentToEditDreamFragment(post.postId)
+            val action =
+                JournalFragmentDirections.actionJournalFragmentToEditDreamFragment(post.postId)
             findNavController().navigate(action)
         }
         adapter.onDeleteClick = { post ->

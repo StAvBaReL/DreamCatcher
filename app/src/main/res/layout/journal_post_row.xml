@@ -1,75 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:layout_marginBottom="12dp"
     android:background="@drawable/bg_card_dark"
-    android:padding="12dp"
-    android:layout_marginBottom="12dp">
+    android:orientation="vertical"
+    android:padding="12dp">
 
     <ImageView
         android:id="@+id/ivDreamImage"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/generated_dream_image" />
+        android:contentDescription="@string/generated_dream_image"
+        android:scaleType="centerCrop" />
 
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:textColor="@color/white"
         android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginTop="10dp" />
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/text_secondary"
-        android:textSize="13sp"
-        android:maxLines="2"
+        android:layout_marginTop="4dp"
         android:ellipsize="end"
-        android:layout_marginTop="4dp" />
+        android:maxLines="2"
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/tvTimestamp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:textColor="@color/text_secondary"
-        android:textSize="11sp"
-        android:layout_marginTop="4dp" />
+        android:textSize="11sp" />
 
     <LinearLayout
+        style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btnEdit"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="40dp"
-            android:layout_weight="1"
-            android:text="@string/edit"
-            android:backgroundTint="@color/teal_primary"
-            android:textColor="@color/white"
-            android:textSize="13sp"
             android:layout_marginEnd="8dp"
-            android:stateListAnimator="@null" />
+            android:layout_weight="1"
+            android:backgroundTint="@color/teal_primary"
+            android:stateListAnimator="@null"
+            android:text="@string/edit"
+            android:textColor="@color/white"
+            android:textSize="13sp" />
 
         <Button
             android:id="@+id/btnDelete"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_weight="1"
-            android:text="@string/delete"
             android:backgroundTint="#CF6679"
+            android:stateListAnimator="@null"
+            android:text="@string/delete"
             android:textColor="@color/white"
-            android:textSize="13sp"
-            android:stateListAnimator="@null" />
+            android:textSize="13sp" />
 
     </LinearLayout>
 

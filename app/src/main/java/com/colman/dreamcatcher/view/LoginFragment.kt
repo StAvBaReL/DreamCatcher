@@ -1,11 +1,11 @@
 package com.colman.dreamcatcher.view
 
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.text.InputType
 import android.widget.Toast
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
@@ -104,8 +104,9 @@ class LoginFragment : Fragment() {
     }
 
     private fun signInWithGoogle(webClientId: String) {
-        val googleIdOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption.Builder(webClientId)
-            .build()
+        val googleIdOption: GetSignInWithGoogleOption =
+            GetSignInWithGoogleOption.Builder(webClientId)
+                .build()
 
         val request: GetCredentialRequest = GetCredentialRequest.Builder()
             .addCredentialOption(googleIdOption)

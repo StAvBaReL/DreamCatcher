@@ -2,16 +2,21 @@ package com.colman.dreamcatcher.model
 
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.UserProfileChangeRequest
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.firestoreSettings
+import com.google.firebase.firestore.memoryCacheSettings
 
 class FirebaseModel {
 
     private val db = Firebase.firestore
-    private val auth = FirebaseAuth.getInstance()
+
+    init {
+        val settings = firestoreSettings {
+            setLocalCacheSettings(memoryCacheSettings {})
+        }
+        db.firestoreSettings = settings
+    }
 
     companion object {
         const val POSTS_COLLECTION = "posts"
@@ -46,7 +51,7 @@ class FirebaseModel {
             .addOnFailureListener { e -> callback(null, null, e.message) }
     }
 
-    fun getAllPosts(since: Long, callback: (List<DreamPost>?, error: String?) -> Unit) {
+    fun getPostsSince(since: Long, callback: (List<DreamPost>?, error: String?) -> Unit) {
         db.collection(POSTS_COLLECTION)
             .whereGreaterThan(DreamPost.LAST_UPDATED_KEY, since)
             .get()
@@ -98,51 +103,4 @@ class FirebaseModel {
             .addOnSuccessListener { callback(true) }
             .addOnFailureListener { callback(false) }
     }
-
-    fun signInWithEmailAndPassword(email: String, password: String, callback: (Boolean, String?) -> Unit) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    callback(true, null)
-                } else {
-                    callback(false, task.exception?.message)
-                }
-            }
-    }
-
-    fun createUserWithEmailAndPassword(email: String, password: String, nickname: String, callback: (Boolean, String?) -> Unit) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    val profileUpdates = UserProfileChangeRequest.Builder()
-                        .setDisplayName(nickname)
-                        .build()
-                    user?.updateProfile(profileUpdates)
-                        ?.addOnCompleteListener {
-                            callback(true, null)
-                        } ?: callback(true, null)
-                } else {
-                    callback(false, task.exception?.message)
-                }
-            }
-    }
-
-    fun signInWithGoogle(idToken: String, callback: (Boolean, String?) -> Unit) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    callback(true, null)
-                } else {
-                    callback(false, task.exception?.message)
-                }
-            }
-    }
-
-    fun signOut() {
-        auth.signOut()
-    }
-
-    fun getCurrentUser() = auth.currentUser
 }

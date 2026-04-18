@@ -2,7 +2,7 @@ package com.colman.dreamcatcher.view
 
 import android.text.format.DateUtils
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.databinding.FeedPostRowBinding
 import com.colman.dreamcatcher.model.DreamPost
 
@@ -11,7 +11,7 @@ class FeedViewHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(post: DreamPost) {
-        Glide.with(binding.root.context)
+        Picasso.get()
             .load(post.imageUrl)
             .into(binding.ivDreamImage)
 

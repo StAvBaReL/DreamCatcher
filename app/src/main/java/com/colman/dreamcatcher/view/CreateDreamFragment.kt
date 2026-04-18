@@ -10,7 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
+import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FragmentCreateDreamBinding
 import com.colman.dreamcatcher.viewmodel.CreateDreamViewModel
@@ -67,8 +67,9 @@ class CreateDreamFragment : Fragment() {
         }
 
         viewModel.generatedImageUrl.observe(viewLifecycleOwner) { url ->
-            Glide.with(this)
-                .load(url)
+            val secureUrl = url?.replace("http://", "https://")
+            Picasso.get()
+                .load(secureUrl)
                 .into(binding.ivGeneratedImage)
         }
 
@@ -82,13 +83,16 @@ class CreateDreamFragment : Fragment() {
                     binding.btnPostDream.isEnabled = false
                     binding.pbPostLoading.visibility = View.VISIBLE
                 }
+
                 LoadingState.SUCCESS -> {
                     findNavController().navigate(R.id.action_createDreamFragment_to_journalFragment)
                 }
+
                 LoadingState.ERROR -> {
                     binding.btnPostDream.isEnabled = true
                     binding.pbPostLoading.visibility = View.GONE
                 }
+
                 else -> {
                     binding.btnPostDream.isEnabled = true
                     binding.pbPostLoading.visibility = View.GONE
@@ -121,7 +125,7 @@ class CreateDreamFragment : Fragment() {
         binding.btnVisualize.isEnabled = false
         binding.imageCard.visibility = View.VISIBLE
         binding.pbLoading.visibility = View.VISIBLE
-        binding.ivGeneratedImage.visibility = View.GONE
+        binding.ivGeneratedImage.visibility = View.INVISIBLE
         binding.postSection.visibility = View.GONE
     }
 
