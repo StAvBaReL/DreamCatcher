@@ -5,6 +5,11 @@ import android.os.Handler
 import android.os.Looper
 import com.colman.dreamcatcher.base.DreamCatcherApplication
 import com.google.firebase.firestore.DocumentSnapshot
+import androidx.lifecycle.LiveData
+import com.colman.dreamcatcher.model.dao.AppLocalDB
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.core.content.edit
 
 object DreamCatcherModel {
 
@@ -12,6 +17,42 @@ object DreamCatcherModel {
     private val firebaseModel = FirebaseModel()
     private val firebaseAuthModel = FirebaseAuthModel()
     private val storageModel = StorageModel()
+    private val database = AppLocalDB.db
+
+    private val sharedPrefs: SharedPreferences by lazy {
+        DreamCatcherApplication.appContext!!.getSharedPreferences("LocalCache", Context.MODE_PRIVATE)
+    }
+
+    private fun getLastUpdate(): Long {
+        return sharedPrefs.getLong("POSTS_LAST_UPDATE", 0L)
+    }
+
+    private fun setLastUpdate(time: Long) {
+        sharedPrefs.edit { putLong("POSTS_LAST_UPDATE", time) }
+    }
+
+    fun getAllPostsLocal(): LiveData<List<DreamPost>> {
+        refreshPosts()
+        return database.dreamPostDao.getAllPosts()
+    }
+
+    fun getPostsByUserLocal(uid: String): LiveData<List<DreamPost>> {
+        refreshPosts()
+        return database.dreamPostDao.getPostsByUser(uid)
+    }
+
+    fun refreshPosts() {
+        val since = getLastUpdate()
+        DreamCatcherApplication.executorService.execute {
+            firebaseModel.getPostsSince(since) { posts, error ->
+                if (error == null && posts != null && posts.isNotEmpty()) {
+                    val maxLastUpdate = posts.maxOfOrNull { it.lastUpdated } ?: since
+                    database.dreamPostDao.insertPostsList(posts)
+                    setLastUpdate(maxLastUpdate)
+                }
+            }
+        }
+    }
 
     fun generateDreamImage(prompt: String, callback: (imageUrl: String?, error: String?) -> Unit) {
         DreamCatcherApplication.executorService.execute {
@@ -23,9 +64,22 @@ object DreamCatcherModel {
         }
     }
 
+    fun uploadDreamImageBytes(bytes: ByteArray, callback: (String?, String?) -> Unit) {
+        DreamCatcherApplication.executorService.execute {
+            storageModel.uploadDreamImageBytes(StorageModel.StorageAPI.CLOUDINARY, bytes) { uri, error ->
+                Handler(Looper.getMainLooper()).post {
+                    callback(uri?.toString(), error)
+                }
+            }
+        }
+    }
+
     fun addPost(post: DreamPost, callback: (error: String?) -> Unit) {
         DreamCatcherApplication.executorService.execute {
             firebaseModel.addPost(post) { error ->
+                if (error == null) {
+                    database.dreamPostDao.insertPosts(post)
+                }
                 Handler(Looper.getMainLooper()).post {
                     callback(error)
                 }
@@ -70,6 +124,9 @@ object DreamCatcherModel {
     fun updatePost(post: DreamPost, callback: (Boolean) -> Unit) {
         DreamCatcherApplication.executorService.execute {
             firebaseModel.updatePost(post) { success ->
+                if (success) {
+                    database.dreamPostDao.insertPosts(post)
+                }
                 Handler(Looper.getMainLooper()).post {
                     callback(success)
                 }
@@ -80,6 +137,9 @@ object DreamCatcherModel {
     fun deletePost(postId: String, callback: (Boolean) -> Unit) {
         DreamCatcherApplication.executorService.execute {
             firebaseModel.deletePost(postId) { success ->
+                if (success) {
+                    database.dreamPostDao.deletePostById(postId)
+                }
                 Handler(Looper.getMainLooper()).post {
                     callback(success)
                 }
