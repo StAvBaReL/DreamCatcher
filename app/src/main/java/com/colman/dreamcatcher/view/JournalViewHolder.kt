@@ -1,7 +1,7 @@
 package com.colman.dreamcatcher.view
 
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.databinding.JournalPostRowBinding
 import com.colman.dreamcatcher.model.DreamPost
 import java.text.SimpleDateFormat
@@ -21,7 +21,7 @@ class JournalViewHolder(
         binding.tvDescription.text = post.description
         binding.tvTimestamp.text = dateFormat.format(Date(post.createdAt))
 
-        Glide.with(binding.root.context)
+        Picasso.get()
             .load(post.imageUrl)
             .into(binding.ivDreamImage)
 
