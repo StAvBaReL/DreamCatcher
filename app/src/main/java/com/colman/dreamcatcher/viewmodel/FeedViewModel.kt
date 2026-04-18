@@ -13,6 +13,8 @@ class FeedViewModel : ViewModel() {
     val isLoadingMore = MutableLiveData(false)
     val isEndReached = MutableLiveData(false)
 
+    val currentUserId: String = DreamCatcherModel.getCurrentUser()?.uid ?: ""
+
     private var lastSnapshot: DocumentSnapshot? = null
     private var isLastPage = false
 
@@ -37,8 +39,21 @@ class FeedViewModel : ViewModel() {
         }
     }
 
+    fun toggleLike(post: DreamPost) {
+        val uid = currentUserId.ifEmpty { return }
+        val isLiked = uid in post.likes
+        val updatedLikes = if (isLiked) post.likes - uid else post.likes + uid
+        val updatedPost = post.copy(likes = updatedLikes)
+        posts.value = posts.value?.map { if (it.postId == post.postId) updatedPost else it }
+        DreamCatcherModel.toggleLike(updatedPost, uid, isLiked) { success ->
+            if (!success) {
+                posts.value = posts.value?.map { if (it.postId == post.postId) post else it }
+            }
+        }
+    }
+
     fun loadNextPage() {
-        if (isLastPage || isLoadingMore.value == true) return
+        if (isLastPage || isLoadingMore.value == true || lastSnapshot == null) return
         isLoadingMore.value = true
         DreamCatcherModel.getPostsPaged(limit = 10, after = lastSnapshot) { list, snapshot, error ->
             if (error == null) {

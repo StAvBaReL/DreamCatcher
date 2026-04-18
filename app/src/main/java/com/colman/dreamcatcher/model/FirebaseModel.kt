@@ -1,6 +1,7 @@
 package com.colman.dreamcatcher.model
 
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
@@ -20,6 +21,14 @@ class FirebaseModel {
 
     companion object {
         const val POSTS_COLLECTION = "posts"
+    }
+
+    fun toggleLike(postId: String, uid: String, wasLiked: Boolean, callback: (Boolean) -> Unit) {
+        val update = if (wasLiked) FieldValue.arrayRemove(uid) else FieldValue.arrayUnion(uid)
+        db.collection(POSTS_COLLECTION).document(postId)
+            .update(DreamPost.LIKES_KEY, update)
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
     }
 
     fun addPost(post: DreamPost, callback: (error: String?) -> Unit) {

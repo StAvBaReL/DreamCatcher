@@ -16,6 +16,9 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private const val TYPE_FOOTER = 1
     }
 
+    var currentUserId: String = ""
+    var onLikeClick: ((DreamPost) -> Unit)? = null
+
     var posts: List<DreamPost> = emptyList()
         set(value) {
             field = value
@@ -49,7 +52,7 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         if (holder is FeedFooterViewHolder) {
             holder.bind(footerState)
         } else if (holder is FeedViewHolder) {
-            holder.bind(posts[position])
+            holder.bind(posts[position], currentUserId, onLikeClick)
         }
     }
 }

@@ -41,6 +41,8 @@ class FeedFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = FeedAdapter()
+        adapter.currentUserId = viewModel.currentUserId
+        adapter.onLikeClick = { post -> viewModel.toggleLike(post) }
         binding.rvFeed.layoutManager = LinearLayoutManager(requireContext())
         binding.rvFeed.adapter = adapter
         binding.rvFeed.addOnScrollListener(object : RecyclerView.OnScrollListener() {
