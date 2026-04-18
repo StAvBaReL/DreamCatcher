@@ -2,6 +2,7 @@ package com.colman.dreamcatcher.model.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -20,9 +21,11 @@ interface DreamPostDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPostsList(posts: List<DreamPost>)
+
+    @Delete
+    fun deletePost(post: DreamPost)
     
     @Query("DELETE FROM posts WHERE postId = :postId")
     fun deletePostById(postId: String)
 }
-
 

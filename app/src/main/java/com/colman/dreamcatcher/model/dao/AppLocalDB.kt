@@ -13,8 +13,7 @@ object AppLocalDB {
             klass = AppLocalDbRepository::class.java,
             name = "dreamcatcher.db"
         )
-            .fallbackToDestructiveMigration(false)
+            .fallbackToDestructiveMigration()
             .build()
     }
 }
-

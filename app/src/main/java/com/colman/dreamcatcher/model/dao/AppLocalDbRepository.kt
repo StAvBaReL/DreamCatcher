@@ -8,4 +8,3 @@ import com.colman.dreamcatcher.model.DreamPost
 abstract class AppLocalDbRepository : RoomDatabase() {
     abstract val dreamPostDao: DreamPostDao
 }
-
