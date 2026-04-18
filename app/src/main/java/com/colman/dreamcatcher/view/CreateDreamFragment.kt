@@ -10,7 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
+import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FragmentCreateDreamBinding
 import com.colman.dreamcatcher.viewmodel.CreateDreamViewModel
@@ -68,7 +68,7 @@ class CreateDreamFragment : Fragment() {
 
         viewModel.generatedImageUrl.observe(viewLifecycleOwner) { url ->
             val secureUrl = url?.replace("http://", "https://")
-            Glide.with(this)
+            Picasso.get()
                 .load(secureUrl)
                 .into(binding.ivGeneratedImage)
         }

@@ -16,6 +16,12 @@ class StorageModel {
         }
     }
 
+    fun uploadDreamImageBytes(api: StorageAPI, bytes: ByteArray, callback: (Uri?, String?) -> Unit) {
+        when (api) {
+            StorageAPI.CLOUDINARY -> cloudinaryStorage.uploadDreamImageBytes(bytes, callback)
+        }
+    }
+
     fun uploadProfileImage(api: StorageAPI, uri: Uri, callback: (Uri?, String?) -> Unit) {
         when (api) {
             StorageAPI.CLOUDINARY -> cloudinaryStorage.uploadProfileImage(uri, callback)

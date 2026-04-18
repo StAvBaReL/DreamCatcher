@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
+import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FragmentProfileBinding
 import com.colman.dreamcatcher.viewmodel.AuthViewModel
@@ -38,7 +38,7 @@ class ProfileFragment : Fragment() {
             uri?.let {
                 selectedImageUri = it
                 selectedImageBytes = null
-                Glide.with(this).load(it).circleCrop().into(binding.ivProfileImage)
+                Picasso.get().load(it).transform(com.colman.dreamcatcher.utils.CircleTransform()).into(binding.ivProfileImage)
             }
         }
 
@@ -50,7 +50,7 @@ class ProfileFragment : Fragment() {
                 selectedImageBytes = baos.toByteArray()
                 selectedImageUri = null
 
-                Glide.with(this).load(it).circleCrop().into(binding.ivProfileImage)
+                binding.ivProfileImage.setImageBitmap(com.colman.dreamcatcher.utils.CircleTransform().transform(it))
             }
         }
 
@@ -74,7 +74,7 @@ class ProfileFragment : Fragment() {
             binding.etNickname.setText(it.displayName ?: "")
             binding.tvEmail.text = it.email ?: ""
             if (it.photoUrl != null) {
-                Glide.with(this).load(it.photoUrl).circleCrop().into(binding.ivProfileImage)
+                Picasso.get().load(it.photoUrl).transform(com.colman.dreamcatcher.utils.CircleTransform()).into(binding.ivProfileImage)
             }
         }
 
@@ -99,7 +99,7 @@ class ProfileFragment : Fragment() {
             user?.let {
                 binding.etNickname.setText(it.displayName ?: "")
                 if (it.photoUrl != null) {
-                    Glide.with(this).load(it.photoUrl).circleCrop().into(binding.ivProfileImage)
+                    Picasso.get().load(it.photoUrl).transform(com.colman.dreamcatcher.utils.CircleTransform()).into(binding.ivProfileImage)
                 }
             }
         }

@@ -4,14 +4,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.colman.dreamcatcher.model.DreamCatcherModel
 import com.colman.dreamcatcher.model.DreamPost
+import com.colman.dreamcatcher.base.DreamCatcherApplication
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.util.UUID
+import android.os.Handler
+import android.os.Looper
 
 class CreateDreamViewModel : ViewModel() {
-
-    companion object {
-        const val MOCK_UID = "mock_user_001"
-        const val MOCK_NICKNAME = "Dreamer"
-    }
 
     val loadingState = MutableLiveData(LoadingState.IDLE)
     val generatedImageUrl = MutableLiveData<String>()
@@ -40,25 +40,57 @@ class CreateDreamViewModel : ViewModel() {
             errorMessage.value = "Please give your dream a title"
             return
         }
-        val now = System.currentTimeMillis()
-        val post = DreamPost(
-            postId = UUID.randomUUID().toString(),
-            authorUid = MOCK_UID,
-            authorNickname = MOCK_NICKNAME,
-            authorProfilePicUrl = null,
-            title = title,
-            description = description,
-            imageUrl = imageUrl,
-            createdAt = now,
-            lastUpdated = now
-        )
+        
+        val user = DreamCatcherModel.getCurrentUser()
+        if (user == null) {
+            errorMessage.value = "User not logged in"
+            return
+        }
+
         postLoadingState.value = LoadingState.LOADING
-        DreamCatcherModel.addPost(post) { error ->
-            if (error == null) {
-                postLoadingState.value = LoadingState.SUCCESS
-            } else {
-                errorMessage.value = error
-                postLoadingState.value = LoadingState.ERROR
+        
+        DreamCatcherApplication.executorService.execute {
+            try {
+                val client = OkHttpClient()
+                val request = Request.Builder().url(imageUrl).build()
+                val response = client.newCall(request).execute()
+                val bytes = response.body.bytes()
+
+                // Call directly on background thread. uploadDreamImageBytes handles thread dispatch.
+                DreamCatcherModel.uploadDreamImageBytes(bytes) { secureUrl, uploadError ->
+                    if (secureUrl == null) {
+                        errorMessage.value = uploadError ?: "Failed to save image to cloud storage"
+                        postLoadingState.value = LoadingState.ERROR
+                        return@uploadDreamImageBytes
+                    }
+
+                    val now = System.currentTimeMillis()
+                    val post = DreamPost(
+                        postId = UUID.randomUUID().toString(),
+                        authorUid = user.uid,
+                        authorNickname = user.displayName ?: "Dreamer",
+                        authorProfilePicUrl = user.photoUrl?.toString(),
+                        title = title,
+                        description = description,
+                        imageUrl = secureUrl,
+                        createdAt = now,
+                        lastUpdated = now
+                    )
+                    
+                    DreamCatcherModel.addPost(post) { error ->
+                        if (error == null) {
+                            postLoadingState.value = LoadingState.SUCCESS
+                        } else {
+                            errorMessage.value = error
+                            postLoadingState.value = LoadingState.ERROR
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Handler(Looper.getMainLooper()).post {
+                    errorMessage.value = "Network error while saving post: ${e.message}"
+                    postLoadingState.value = LoadingState.ERROR
+                }
             }
         }
     }

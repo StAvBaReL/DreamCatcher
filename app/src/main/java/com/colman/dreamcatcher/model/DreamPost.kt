@@ -1,6 +1,12 @@
 package com.colman.dreamcatcher.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+
+@Entity(tableName = "posts")
 data class DreamPost(
+    @PrimaryKey
     val postId: String = "",
     val authorUid: String = "",
     val authorNickname: String = "",
@@ -25,7 +31,6 @@ data class DreamPost(
         const val LIKES_KEY = "likes"
 
         fun fromJson(json: Map<String, Any?>): DreamPost {
-            @Suppress("UNCHECKED_CAST")
             return DreamPost(
                 postId = json[POST_ID_KEY] as? String ?: "",
                 authorUid = json[AUTHOR_UID_KEY] as? String ?: "",

@@ -69,21 +69,11 @@ class FeedFragment : Fragment() {
         }
 
         viewModel.isLoadingMore.observe(viewLifecycleOwner) { loading ->
-            binding.rvFeed.post {
-                if (_binding != null) {
-                    adapter.footerState = if (loading) FooterState.LOADING else FooterState.HIDDEN
-                }
-            }
+            // Local sync overrides footer indicator.
         }
 
         viewModel.isEndReached.observe(viewLifecycleOwner) { ended ->
-            if (ended) {
-                binding.rvFeed.post {
-                    if (_binding != null) {
-                        adapter.footerState = FooterState.END
-                    }
-                }
-            }
+            // Local sync overrides footer indicator.
         }
     }
 
