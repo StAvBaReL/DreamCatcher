@@ -1,11 +1,22 @@
 package com.colman.dreamcatcher.model
 
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.Query
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.firestoreSettings
+import com.google.firebase.firestore.memoryCacheSettings
 
 class FirebaseModel {
 
     private val db = Firebase.firestore
+
+    init {
+        val settings = firestoreSettings {
+            setLocalCacheSettings(memoryCacheSettings {})
+        }
+        db.firestoreSettings = settings
+    }
 
     companion object {
         const val POSTS_COLLECTION = "posts"
@@ -19,7 +30,28 @@ class FirebaseModel {
             .addOnFailureListener { e -> callback(e.message) }
     }
 
-    fun getAllPosts(since: Long, callback: (List<DreamPost>?, error: String?) -> Unit) {
+    fun getPostsPaged(
+        limit: Long,
+        after: DocumentSnapshot?,
+        callback: (List<DreamPost>?, lastSnapshot: DocumentSnapshot?, error: String?) -> Unit
+    ) {
+        var query = db.collection(POSTS_COLLECTION)
+            .orderBy(DreamPost.CREATED_AT_KEY, Query.Direction.DESCENDING)
+            .limit(limit)
+        if (after != null) {
+            query = query.startAfter(after)
+        }
+        query.get()
+            .addOnSuccessListener { snapshot ->
+                val posts = snapshot.documents.mapNotNull { doc ->
+                    doc.data?.let { DreamPost.fromJson(it) }
+                }
+                callback(posts, snapshot.documents.lastOrNull(), null)
+            }
+            .addOnFailureListener { e -> callback(null, null, e.message) }
+    }
+
+    fun getPostsSince(since: Long, callback: (List<DreamPost>?, error: String?) -> Unit) {
         db.collection(POSTS_COLLECTION)
             .whereGreaterThan(DreamPost.LAST_UPDATED_KEY, since)
             .get()

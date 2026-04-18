@@ -15,7 +15,8 @@ class JournalAdapter : RecyclerView.Adapter<JournalViewHolder>() {
     override fun getItemCount(): Int = posts.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JournalViewHolder {
-        val binding = JournalPostRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding =
+            JournalPostRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return JournalViewHolder(binding, onEditClick, onDeleteClick)
     }
 
