@@ -49,6 +49,30 @@ class CloudinaryStorageModel {
         }
     }
 
+    fun uploadDreamImageBytes(bytes: ByteArray, callback: (Uri?, String?) -> Unit) {
+        requireUser({ error -> callback(null, error) }) { user ->
+            try {
+                val publicId = "dream_${user.uid}_${UUID.randomUUID()}"
+                val options = ObjectUtils.asMap(
+                    "public_id", publicId,
+                    "folder", "dreamcatcher/dreams"
+                )
+
+                val result = cloudinary.uploader().upload(bytes, options)
+                val secureUrl = result["secure_url"] as? String
+
+                if (secureUrl != null) {
+                    callback(secureUrl.toUri(), null)
+                } else {
+                    callback(null, "Upload succeeded but secure_url is missing")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Upload failed: ${e.message}", e)
+                callback(null, "Upload failed: ${e.message}")
+            }
+        }
+    }
+
     fun uploadProfileImage(uri: Uri, callback: (Uri?, String?) -> Unit) {
         try {
             val contentResolver = DreamCatcherApplication.appContext?.contentResolver
@@ -64,6 +88,15 @@ class CloudinaryStorageModel {
         } catch (e: Exception) {
             Log.e(TAG, "Error processing image URI", e)
             callback(null, "Error processing image: ${e.message}")
+        }
+    }
+
+    private fun requireUser(onError: (String) -> Unit, action: (com.google.firebase.auth.FirebaseUser) -> Unit) {
+        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            action(user)
+        } else {
+            onError("User not authenticated")
         }
     }
 }

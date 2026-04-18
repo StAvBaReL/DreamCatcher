@@ -4,10 +4,19 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.firestoreSettings
+import com.google.firebase.firestore.memoryCacheSettings
 
 class FirebaseModel {
 
     private val db = Firebase.firestore
+
+    init {
+        val settings = firestoreSettings {
+            setLocalCacheSettings(memoryCacheSettings {})
+        }
+        db.firestoreSettings = settings
+    }
 
     companion object {
         const val POSTS_COLLECTION = "posts"
@@ -40,6 +49,19 @@ class FirebaseModel {
                 callback(posts, snapshot.documents.lastOrNull(), null)
             }
             .addOnFailureListener { e -> callback(null, null, e.message) }
+    }
+
+    fun getPostsSince(since: Long, callback: (List<DreamPost>?, error: String?) -> Unit) {
+        db.collection(POSTS_COLLECTION)
+            .whereGreaterThan(DreamPost.LAST_UPDATED_KEY, since)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val posts = snapshot.documents.mapNotNull { doc ->
+                    doc.data?.let { DreamPost.fromJson(it) }
+                }
+                callback(posts, null)
+            }
+            .addOnFailureListener { e -> callback(null, e.message) }
     }
 
     fun getPostsByUser(uid: String, callback: (List<DreamPost>?, error: String?) -> Unit) {
