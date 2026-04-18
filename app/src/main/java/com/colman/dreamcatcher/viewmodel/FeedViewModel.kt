@@ -1,5 +1,6 @@
 package com.colman.dreamcatcher.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.colman.dreamcatcher.model.DreamCatcherModel
@@ -8,49 +9,18 @@ import com.google.firebase.firestore.DocumentSnapshot
 
 class FeedViewModel : ViewModel() {
 
-    val posts = MutableLiveData<List<DreamPost>>(emptyList())
+    val posts: LiveData<List<DreamPost>> = DreamCatcherModel.getAllPostsLocal()
     val loadingState = MutableLiveData(LoadingState.IDLE)
     val isLoadingMore = MutableLiveData(false)
-    val isEndReached = MutableLiveData(false)
-
-    private var lastSnapshot: DocumentSnapshot? = null
-    private var isLastPage = false
+    val isEndReached = MutableLiveData(true)
 
     fun loadFirstPage() {
-        lastSnapshot = null
-        isLastPage = false
-        isEndReached.value = false
         loadingState.value = LoadingState.LOADING
-        DreamCatcherModel.getPostsPaged(limit = 10, after = null) { list, snapshot, error ->
-            if (error == null) {
-                val result = list ?: emptyList()
-                posts.value = result
-                lastSnapshot = snapshot
-                if (result.size < 10) {
-                    isLastPage = true
-                    isEndReached.value = true
-                }
-                loadingState.value = LoadingState.SUCCESS
-            } else {
-                loadingState.value = LoadingState.ERROR
-            }
-        }
+        DreamCatcherModel.refreshPosts()
+        loadingState.value = LoadingState.SUCCESS
     }
 
     fun loadNextPage() {
-        if (isLastPage || isLoadingMore.value == true) return
-        isLoadingMore.value = true
-        DreamCatcherModel.getPostsPaged(limit = 10, after = lastSnapshot) { list, snapshot, error ->
-            if (error == null) {
-                val result = list ?: emptyList()
-                posts.value = (posts.value ?: emptyList()) + result
-                lastSnapshot = snapshot
-                if (result.size < 10) {
-                    isLastPage = true
-                    isEndReached.value = true
-                }
-            }
-            isLoadingMore.value = false
-        }
+        // Pagination logic is disabled as we fetch latest changes locally.
     }
 }
