@@ -16,8 +16,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class JournalFragment : Fragment() {
 
-    private var _binding: FragmentJournalBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentJournalBinding? = null
     private val viewModel: JournalViewModel by viewModels()
     private lateinit var adapter: JournalAdapter
 
@@ -25,9 +24,9 @@ class JournalFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentJournalBinding.inflate(inflater, container, false)
-        return binding.root
+    ): View? {
+        binding = FragmentJournalBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -43,6 +42,7 @@ class JournalFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        val binding = binding ?: return
         adapter = JournalAdapter()
         adapter.onEditClick = { post ->
             val action =
@@ -65,17 +65,19 @@ class JournalFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
-            adapter.posts = posts.toMutableList()
-            adapter.notifyDataSetChanged()
-            binding.tvEmpty.visibility = if (posts.isEmpty()) View.VISIBLE else View.GONE
+            val currentBinding = binding ?: return@observe
+            adapter.submitData(lifecycle, posts)
+            currentBinding.tvEmpty.visibility = View.GONE
         }
 
         viewModel.loadingState.observe(viewLifecycleOwner) { state ->
-            binding.swipeRefresh.isRefreshing = state == LoadingState.LOADING
+            val currentBinding = binding ?: return@observe
+            currentBinding.swipeRefresh.isRefreshing = state == LoadingState.LOADING
         }
     }
 
     private fun setupSwipeRefresh() {
+        val binding = binding ?: return
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.loadPosts()
         }
@@ -83,6 +85,6 @@ class JournalFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 }
