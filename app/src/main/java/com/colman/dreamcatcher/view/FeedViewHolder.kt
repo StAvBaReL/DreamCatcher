@@ -2,9 +2,9 @@ package com.colman.dreamcatcher.view
 
 import android.text.format.DateUtils
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.databinding.FeedPostRowBinding
 import com.colman.dreamcatcher.model.DreamPost
+import com.squareup.picasso.Picasso
 
 class FeedViewHolder(
     private val binding: FeedPostRowBinding
