@@ -8,16 +8,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.databinding.FragmentEditDreamBinding
 import com.colman.dreamcatcher.viewmodel.EditDreamViewModel
 import com.colman.dreamcatcher.viewmodel.LoadingState
 import com.google.android.material.snackbar.Snackbar
+import com.squareup.picasso.Picasso
 
 class EditDreamFragment : Fragment() {
 
-    private var _binding: FragmentEditDreamBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentEditDreamBinding? = null
     private val viewModel: EditDreamViewModel by viewModels()
     private val args: EditDreamFragmentArgs by navArgs()
 
@@ -25,9 +24,9 @@ class EditDreamFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentEditDreamBinding.inflate(inflater, container, false)
-        return binding.root
+    ): View? {
+        binding = FragmentEditDreamBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -40,32 +39,38 @@ class EditDreamFragment : Fragment() {
     private fun setupObservers() {
         viewModel.post.observe(viewLifecycleOwner) { post ->
             post ?: return@observe
-            binding.etEditTitle.setText(post.title)
-            binding.etEditDescription.setText(post.description)
+            val currentBinding = this.binding ?: return@observe
+            currentBinding.etEditTitle.setText(post.title)
+            currentBinding.etEditDescription.setText(post.description)
             Picasso.get()
                 .load(post.imageUrl)
-                .into(binding.ivEditImage)
+                .into(currentBinding.ivEditImage)
         }
 
         viewModel.imageRegenState.observe(viewLifecycleOwner) { state ->
+            val currentBinding = this.binding ?: return@observe
             when (state) {
                 LoadingState.LOADING -> {
-                    binding.pbImageRegen.visibility = View.VISIBLE
-                    binding.btnRevisualize.isEnabled = false
+                    currentBinding.pbImageRegen.visibility = View.VISIBLE
+                    currentBinding.btnRevisualize.isEnabled = false
                 }
 
                 LoadingState.SUCCESS -> {
-                    binding.pbImageRegen.visibility = View.GONE
-                    binding.btnRevisualize.isEnabled = true
+                    currentBinding.pbImageRegen.visibility = View.GONE
+                    currentBinding.btnRevisualize.isEnabled = true
                     viewModel.post.value?.imageUrl?.let { url ->
-                        Picasso.get().load(url).into(binding.ivEditImage)
+                        Picasso.get().load(url).into(currentBinding.ivEditImage)
                     }
                 }
 
                 LoadingState.ERROR -> {
-                    binding.pbImageRegen.visibility = View.GONE
-                    binding.btnRevisualize.isEnabled = true
-                    Snackbar.make(binding.root, "Failed to regenerate image", Snackbar.LENGTH_SHORT)
+                    currentBinding.pbImageRegen.visibility = View.GONE
+                    currentBinding.btnRevisualize.isEnabled = true
+                    Snackbar.make(
+                        currentBinding.root,
+                        "Failed to regenerate image",
+                        Snackbar.LENGTH_SHORT
+                    )
                         .show()
                 }
 
@@ -74,24 +79,26 @@ class EditDreamFragment : Fragment() {
         }
 
         viewModel.saveState.observe(viewLifecycleOwner) { state ->
+            val currentBinding = this.binding ?: return@observe
             when (state) {
-                LoadingState.LOADING -> binding.btnSaveChanges.isEnabled = false
+                LoadingState.LOADING -> currentBinding.btnSaveChanges.isEnabled = false
                 LoadingState.SUCCESS -> findNavController().popBackStack()
                 LoadingState.ERROR -> {
-                    binding.btnSaveChanges.isEnabled = true
+                    currentBinding.btnSaveChanges.isEnabled = true
                     Snackbar.make(
-                        binding.root,
+                        currentBinding.root,
                         "Save failed. Please try again.",
                         Snackbar.LENGTH_SHORT
                     ).show()
                 }
 
-                else -> binding.btnSaveChanges.isEnabled = true
+                else -> currentBinding.btnSaveChanges.isEnabled = true
             }
         }
     }
 
     private fun setupListeners() {
+        val binding = binding ?: return
         binding.btnRevisualize.setOnClickListener {
             val prompt = binding.etEditDescription.text.toString()
             viewModel.regenerateImage(prompt)
@@ -107,6 +114,6 @@ class EditDreamFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 }
