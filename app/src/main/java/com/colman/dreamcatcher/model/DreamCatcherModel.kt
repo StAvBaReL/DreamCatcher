@@ -51,6 +51,19 @@ object DreamCatcherModel {
                         }
                     }
                     LocalSyncManager.setLastSyncTimestamp(latestUpdate)
+
+                    firebaseModel.getAllActivePostIds { remoteIds, idError ->
+                        if (idError == null && remoteIds != null) {
+                            DreamCatcherApplication.executorService.execute {
+                                val localIds = database.dreamPostDao.getAllPostIds()
+                                val deletedIds = localIds - remoteIds.toSet()
+
+                                for (deletedId in deletedIds) {
+                                    database.dreamPostDao.deletePostById(deletedId)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -177,48 +190,13 @@ object DreamCatcherModel {
         callback: (Boolean) -> Unit = {}
     ) {
         val user = getCurrentUser()
+
         if (user == null) {
             Handler(Looper.getMainLooper()).post { callback(false) }
             return
         }
 
-        getPostsByUser(user.uid) { posts, error ->
-            if (error != null || posts == null) {
-                callback(false)
-                return@getPostsByUser
-            }
-
-            val postsToUpdate = posts.filter {
-                it.authorNickname != displayName || it.authorProfilePicUrl != photoUrl
-            }
-
-            if (postsToUpdate.isEmpty()) {
-                callback(true)
-                return@getPostsByUser
-            }
-
-            var remaining = postsToUpdate.size
-            var allSucceeded = true
-
-            postsToUpdate.forEach { post ->
-                val updatedPost = post.copy(
-                    authorNickname = displayName,
-                    authorProfilePicUrl = photoUrl,
-                    lastUpdated = System.currentTimeMillis()
-                )
-
-                updatePost(updatedPost) { success ->
-                    if (!success) {
-                        allSucceeded = false
-                    }
-
-                    remaining -= 1
-                    if (remaining == 0) {
-                        callback(allSucceeded)
-                    }
-                }
-            }
-        }
+        updateUserPostsAuthorDetails(user.uid, displayName, photoUrl, callback)
     }
 
     fun uploadProfileImageBytes(bytes: ByteArray, callback: (Uri?, String?) -> Unit) {

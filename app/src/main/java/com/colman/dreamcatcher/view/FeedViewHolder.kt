@@ -10,14 +10,19 @@ import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FeedPostRowBinding
 import com.colman.dreamcatcher.model.DreamCatcherModel
 import com.colman.dreamcatcher.model.DreamPost
-import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.utils.CircleTransform
 
 class FeedViewHolder(
     private val binding: FeedPostRowBinding
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    fun bind(post: DreamPost, currentUserId: String, onLikeClick: ((DreamPost) -> Unit)?) {
+    fun bind(
+        post: DreamPost,
+        currentUserId: String,
+        onLikeClick: ((DreamPost) -> Unit)?,
+        onEditClick: ((DreamPost) -> Unit)?,
+        onDeleteClick: ((DreamPost) -> Unit)?
+    ) {
         Picasso.get()
             .load(post.imageUrl)
             .into(binding.ivDreamImage)
@@ -60,5 +65,15 @@ class FeedViewHolder(
         }
         binding.ivLikeButton.setColorFilter(likeColor, PorterDuff.Mode.SRC_IN)
         binding.ivLikeButton.setOnClickListener { onLikeClick?.invoke(post) }
+
+        if (post.authorUid == currentUserId) {
+            binding.btnEdit.visibility = View.VISIBLE
+            binding.btnDelete.visibility = View.VISIBLE
+            binding.btnEdit.setOnClickListener { onEditClick?.invoke(post) }
+            binding.btnDelete.setOnClickListener { onDeleteClick?.invoke(post) }
+        } else {
+            binding.btnEdit.visibility = View.GONE
+            binding.btnDelete.visibility = View.GONE
+        }
     }
 }

@@ -26,7 +26,10 @@ class FirebaseModel {
     fun toggleLike(postId: String, uid: String, wasLiked: Boolean, callback: (Boolean) -> Unit) {
         val update = if (wasLiked) FieldValue.arrayRemove(uid) else FieldValue.arrayUnion(uid)
         db.collection(POSTS_COLLECTION).document(postId)
-            .update(DreamPost.LIKES_KEY, update)
+            .update(
+                DreamPost.LIKES_KEY, update,
+                DreamPost.LAST_UPDATED_KEY, System.currentTimeMillis()
+            )
             .addOnSuccessListener { callback(true) }
             .addOnFailureListener { callback(false) }
     }
@@ -48,6 +51,16 @@ class FirebaseModel {
                     doc.data?.let { DreamPost.fromJson(it) }
                 }
                 callback(posts, null)
+            }
+            .addOnFailureListener { e -> callback(null, e.message) }
+    }
+
+    fun getAllActivePostIds(callback: (List<String>?, error: String?) -> Unit) {
+        db.collection(POSTS_COLLECTION)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val ids = snapshot.documents.map { it.id }
+                callback(ids, null)
             }
             .addOnFailureListener { e -> callback(null, e.message) }
     }

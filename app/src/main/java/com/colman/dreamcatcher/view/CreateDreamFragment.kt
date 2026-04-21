@@ -89,7 +89,7 @@ class CreateDreamFragment : Fragment() {
                 }
 
                 LoadingState.SUCCESS -> {
-                    findNavController().navigate(R.id.action_createDreamFragment_to_journalFragment)
+                    findNavController().navigate(R.id.action_createDreamFragment_to_feedFragment)
                 }
 
                 LoadingState.ERROR -> {

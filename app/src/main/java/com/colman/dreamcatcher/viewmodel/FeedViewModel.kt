@@ -23,17 +23,17 @@ class FeedViewModel : ViewModel() {
 
     fun toggleLike(post: DreamPost) {
         val uid = currentUserId.ifEmpty { return }
+
         val isLiked = uid in post.likes
         val updatedLikes = if (isLiked) post.likes - uid else post.likes + uid
         val updatedPost = post.copy(likes = updatedLikes)
-        
-        posts.value = posts.value?.map { if (it.postId == post.postId) updatedPost else it }
-        
-        DreamCatcherModel.toggleLike(updatedPost, uid, isLiked) { success ->
-            if (!success) {
-                posts.value = posts.value?.map { if (it.postId == post.postId) post else it }
-            }
+
+        DreamCatcherModel.toggleLike(updatedPost, uid, isLiked) { _ -> }
+    }
+
+    fun deletePost(postId: String) {
+        DreamCatcherModel.deletePost(postId) { _ ->
+            loadFirstPage()
         }
     }
 }
- 

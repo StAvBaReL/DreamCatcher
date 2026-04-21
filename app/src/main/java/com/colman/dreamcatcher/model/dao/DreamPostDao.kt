@@ -18,6 +18,9 @@ interface DreamPostDao {
     @Query("SELECT * FROM posts WHERE authorUid = :uid AND isDeleted = 0 ORDER BY createdAt DESC")
     fun getPostsByUser(uid: String): LiveData<List<DreamPost>>
 
+    @Query("SELECT postId FROM posts")
+    fun getAllPostIds(): List<String>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPosts(post: DreamPost)
 

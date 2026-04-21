@@ -81,10 +81,14 @@ class EditDreamFragment : Fragment() {
         viewModel.saveState.observe(viewLifecycleOwner) { state ->
             val currentBinding = this.binding ?: return@observe
             when (state) {
-                LoadingState.LOADING -> currentBinding.btnSaveChanges.isEnabled = false
+                LoadingState.LOADING -> {
+                    currentBinding.btnSaveChanges.isEnabled = false
+                    currentBinding.pbSaveLoading.visibility = View.VISIBLE
+                }
                 LoadingState.SUCCESS -> findNavController().popBackStack()
                 LoadingState.ERROR -> {
                     currentBinding.btnSaveChanges.isEnabled = true
+                    currentBinding.pbSaveLoading.visibility = View.GONE
                     Snackbar.make(
                         currentBinding.root,
                         "Save failed. Please try again.",
@@ -92,7 +96,10 @@ class EditDreamFragment : Fragment() {
                     ).show()
                 }
 
-                else -> currentBinding.btnSaveChanges.isEnabled = true
+                else -> {
+                    currentBinding.btnSaveChanges.isEnabled = true
+                    currentBinding.pbSaveLoading.visibility = View.GONE
+                }
             }
         }
     }

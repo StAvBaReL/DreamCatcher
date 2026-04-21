@@ -10,6 +10,8 @@ import com.colman.dreamcatcher.model.DreamPost
 class FeedAdapter : PagingDataAdapter<DreamPost, FeedViewHolder>(PostDiffCallback()) {
     var currentUserId: String = ""
     var onLikeClick: ((DreamPost) -> Unit)? = null
+    var onEditClick: ((DreamPost) -> Unit)? = null
+    var onDeleteClick: ((DreamPost) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedViewHolder {
         val binding =
@@ -20,7 +22,7 @@ class FeedAdapter : PagingDataAdapter<DreamPost, FeedViewHolder>(PostDiffCallbac
     override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
         val post = getItem(position)
         if (post != null) {
-            holder.bind(post, currentUserId, onLikeClick)
+            holder.bind(post, currentUserId, onLikeClick, onEditClick, onDeleteClick)
         }
     }
 

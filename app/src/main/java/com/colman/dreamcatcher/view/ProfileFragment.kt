@@ -221,6 +221,30 @@ class ProfileFragment : Fragment() {
     private fun setupRecyclerView() {
         val currentBinding = binding ?: return
         adapter = FeedAdapter()
+        val currentUserId = profileViewModel.getCurrentUser()?.uid ?: ""
+        adapter.currentUserId = currentUserId
+        
+        adapter.onLikeClick = { post ->
+            profileViewModel.toggleLike(post)
+        }
+        
+        adapter.onEditClick = { post ->
+            val action =
+                ProfileFragmentDirections.actionProfileFragmentToEditDreamFragment(post.postId)
+            findNavController().navigate(action)
+        }
+
+        adapter.onDeleteClick = { post ->
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.delete_dialog_title)
+                .setMessage(R.string.delete_dialog_message)
+                .setPositiveButton(R.string.confirm) { _, _ ->
+                    profileViewModel.deletePost(post.postId)
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+        }
+
         currentBinding.rvProfileDreams.layoutManager = LinearLayoutManager(requireContext())
         currentBinding.rvProfileDreams.adapter = adapter
     }

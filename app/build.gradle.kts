@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.google.services)
     alias(libs.plugins.androidx.navigation.safe.args)
-    alias(libs.plugins.kotlin.ksp)
 }
 
 android {

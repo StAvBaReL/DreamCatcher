@@ -2,6 +2,7 @@ package com.colman.dreamcatcher.viewmodel
 
 import android.net.Uri
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
@@ -123,6 +124,24 @@ class ProfileViewModel : ViewModel() {
                     _errorMessage.value = updateError ?: "Failed to update profile"
                 }
             }
+        }
+    }
+
+    fun toggleLike(post: DreamPost) {
+        val uid = getCurrentUser()?.uid ?: return
+
+        val isLiked = uid in post.likes
+        val updatedLikes = if (isLiked) post.likes - uid else post.likes + uid
+        val updatedPost = post.copy(likes = updatedLikes)
+
+        DreamCatcherModel.toggleLike(updatedPost, uid, isLiked) { _ ->
+            // Room pushes LiveData
+        }
+    }
+
+    fun deletePost(postId: String) {
+        DreamCatcherModel.deletePost(postId) { _ ->
+            fetchUserStats()
         }
     }
 
