@@ -64,6 +64,11 @@ class ProfileViewModel : ViewModel() {
                         _isLoading.value = false
                         if (success) {
                             handleProfileUpdateSuccess(displayName, urlUri.toString())
+                            DreamCatcherModel.syncCurrentUserProfileToPosts(
+                                displayName = displayName,
+                                photoUrl = urlUri.toString()
+                            )
+                            _updateState.value = true
                         } else {
                             _errorMessage.value = updateError ?: "Failed to update profile"
                         }
@@ -83,6 +88,11 @@ class ProfileViewModel : ViewModel() {
                         _isLoading.value = false
                         if (success) {
                             handleProfileUpdateSuccess(displayName, urlUri.toString())
+                            DreamCatcherModel.syncCurrentUserProfileToPosts(
+                                displayName = displayName,
+                                photoUrl = urlUri.toString()
+                            )
+                            _updateState.value = true
                         } else {
                             _errorMessage.value = updateError ?: "Failed to update profile"
                         }
@@ -104,6 +114,11 @@ class ProfileViewModel : ViewModel() {
                 _isLoading.value = false
                 if (success) {
                     handleProfileUpdateSuccess(displayName, uriToSave?.toString())
+                    DreamCatcherModel.syncCurrentUserProfileToPosts(
+                        displayName = displayName,
+                        photoUrl = uriToSave?.toString()
+                    )
+                    _updateState.value = true
                 } else {
                     _errorMessage.value = updateError ?: "Failed to update profile"
                 }

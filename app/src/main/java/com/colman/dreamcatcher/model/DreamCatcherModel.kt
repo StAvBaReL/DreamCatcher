@@ -78,16 +78,25 @@ object DreamCatcherModel {
         }
     }
 
+    fun toggleLike(updatedPost: DreamPost, uid: String, wasLiked: Boolean, callback: (Boolean) -> Unit) {
+        firebaseModel.toggleLike(updatedPost.postId, uid, wasLiked) { success ->
+            if (success) {
+                DreamCatcherApplication.executorService.execute {
+                    database.dreamPostDao.insertPosts(updatedPost)
+                }
+            }
+            Handler(Looper.getMainLooper()).post { callback(success) }
+        }
+    }
+
     fun addPost(post: DreamPost, callback: (error: String?) -> Unit) {
         firebaseModel.addPost(post) { error ->
             DreamCatcherApplication.executorService.execute {
                 if (error == null) {
                     database.dreamPostDao.insertPosts(post)
                 }
-                Handler(Looper.getMainLooper()).post {
-                    callback(error)
-                }
             }
+            callback(error)
         }
     }
 
@@ -105,10 +114,8 @@ object DreamCatcherModel {
                 if (success) {
                     database.dreamPostDao.insertPosts(post)
                 }
-                Handler(Looper.getMainLooper()).post {
-                    callback(success)
-                }
             }
+            Handler(Looper.getMainLooper()).post { callback(success) }
         }
     }
 
@@ -131,10 +138,8 @@ object DreamCatcherModel {
                 if (success) {
                     database.dreamPostDao.deletePostById(postId)
                 }
-                Handler(Looper.getMainLooper()).post {
-                    callback(success)
-                }
             }
+            Handler(Looper.getMainLooper()).post { callback(success) }
         }
     }
 
@@ -164,6 +169,56 @@ object DreamCatcherModel {
         displayName: String, photoUrl: Uri?, callback: (Boolean, String?) -> Unit
     ) {
         firebaseAuthModel.updateUserProfile(displayName, photoUrl, callback)
+    }
+
+    fun syncCurrentUserProfileToPosts(
+        displayName: String,
+        photoUrl: String?,
+        callback: (Boolean) -> Unit = {}
+    ) {
+        val user = getCurrentUser()
+        if (user == null) {
+            Handler(Looper.getMainLooper()).post { callback(false) }
+            return
+        }
+
+        getPostsByUser(user.uid) { posts, error ->
+            if (error != null || posts == null) {
+                callback(false)
+                return@getPostsByUser
+            }
+
+            val postsToUpdate = posts.filter {
+                it.authorNickname != displayName || it.authorProfilePicUrl != photoUrl
+            }
+
+            if (postsToUpdate.isEmpty()) {
+                callback(true)
+                return@getPostsByUser
+            }
+
+            var remaining = postsToUpdate.size
+            var allSucceeded = true
+
+            postsToUpdate.forEach { post ->
+                val updatedPost = post.copy(
+                    authorNickname = displayName,
+                    authorProfilePicUrl = photoUrl,
+                    lastUpdated = System.currentTimeMillis()
+                )
+
+                updatePost(updatedPost) { success ->
+                    if (!success) {
+                        allSucceeded = false
+                    }
+
+                    remaining -= 1
+                    if (remaining == 0) {
+                        callback(allSucceeded)
+                    }
+                }
+            }
+        }
     }
 
     fun uploadProfileImageBytes(bytes: ByteArray, callback: (Uri?, String?) -> Unit) {

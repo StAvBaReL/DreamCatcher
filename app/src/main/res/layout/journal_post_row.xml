@@ -42,36 +42,32 @@
         android:textSize="11sp" />
 
     <LinearLayout
-        style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:gravity="end"
         android:orientation="horizontal">
 
-        <Button
+        <ImageButton
             android:id="@+id/btnEdit"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dp"
+            android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
+            android:background="@drawable/bg_initials_circle"
             android:backgroundTint="@color/teal_primary"
-            android:stateListAnimator="@null"
-            android:text="@string/edit"
-            android:textColor="@color/white"
-            android:textSize="13sp" />
+            android:contentDescription="@string/edit"
+            android:padding="8dp"
+            android:src="@drawable/ic_edit" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnDelete"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dp"
+            android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/bg_initials_circle"
             android:backgroundTint="#CF6679"
-            android:stateListAnimator="@null"
-            android:text="@string/delete"
-            android:textColor="@color/white"
-            android:textSize="13sp" />
+            android:contentDescription="@string/delete"
+            android:padding="8dp"
+            android:src="@drawable/ic_delete" />
 
     </LinearLayout>
 

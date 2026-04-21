@@ -3,6 +3,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.google.services)
     alias(libs.plugins.androidx.navigation.safe.args)
     alias(libs.plugins.kotlin.ksp)
@@ -75,6 +76,7 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.glide)
+    implementation(libs.picasso)
     implementation(libs.okhttp3.integration)
     implementation(libs.okhttp)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)

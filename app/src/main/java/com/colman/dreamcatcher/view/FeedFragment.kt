@@ -40,6 +40,8 @@ class FeedFragment : Fragment() {
     private fun setupRecyclerView() {
         val binding = binding ?: return
         adapter = FeedAdapter()
+        adapter.currentUserId = viewModel.currentUserId
+        adapter.onLikeClick = { post -> viewModel.toggleLike(post) }
         binding.rvFeed.layoutManager = LinearLayoutManager(requireContext())
         binding.rvFeed.adapter = adapter
     }
