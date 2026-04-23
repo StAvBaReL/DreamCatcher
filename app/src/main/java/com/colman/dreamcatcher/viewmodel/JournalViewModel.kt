@@ -15,8 +15,9 @@ class JournalViewModel : ViewModel() {
 
     fun loadPosts() {
         loadingState.value = LoadingState.LOADING
-        DreamCatcherModel.refreshPosts()
-        loadingState.value = LoadingState.SUCCESS
+        DreamCatcherModel.refreshPosts { error: String? ->
+            loadingState.value = if (error == null) LoadingState.SUCCESS else LoadingState.ERROR
+        }
     }
 
     fun deletePost(postId: String, onDone: () -> Unit) {

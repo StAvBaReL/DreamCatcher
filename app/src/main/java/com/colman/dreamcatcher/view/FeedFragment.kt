@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.colman.dreamcatcher.databinding.FragmentFeedBinding
 import com.colman.dreamcatcher.viewmodel.FeedViewModel
 import com.colman.dreamcatcher.viewmodel.LoadingState
@@ -33,25 +32,17 @@ class FeedFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
         setupSwipeRefresh()
+    }
 
-        if (viewModel.posts.value.isNullOrEmpty()) {
-            viewModel.loadFirstPage()
-        }
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadPosts()
     }
 
     private fun setupRecyclerView() {
         adapter = FeedAdapter()
         binding.rvFeed.layoutManager = LinearLayoutManager(requireContext())
         binding.rvFeed.adapter = adapter
-        binding.rvFeed.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                val lastVisible = layoutManager.findLastVisibleItemPosition()
-                if (lastVisible >= adapter.itemCount - 2) {
-                    viewModel.loadNextPage()
-                }
-            }
-        })
     }
 
     private fun setupObservers() {
@@ -67,19 +58,11 @@ class FeedFragment : Fragment() {
         viewModel.loadingState.observe(viewLifecycleOwner) { state ->
             binding.swipeRefresh.isRefreshing = state == LoadingState.LOADING
         }
-
-        viewModel.isLoadingMore.observe(viewLifecycleOwner) { loading ->
-            // Local sync overrides footer indicator.
-        }
-
-        viewModel.isEndReached.observe(viewLifecycleOwner) { ended ->
-            // Local sync overrides footer indicator.
-        }
     }
 
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
-            viewModel.loadFirstPage()
+            viewModel.loadPosts()
         }
     }
 

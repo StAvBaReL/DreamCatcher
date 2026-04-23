@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         binding.fabCreate.setOnClickListener {
             it.animate().scaleX(0.8f).scaleY(0.8f).setDuration(100).withEndAction {
                 it.animate().scaleX(1f).scaleY(1f).setDuration(100).withEndAction {
-                    navController.navigate(R.id.createDreamFragment)
+                    navController.navigate(R.id.action_global_to_createDreamFragment)
                 }
             }
         }

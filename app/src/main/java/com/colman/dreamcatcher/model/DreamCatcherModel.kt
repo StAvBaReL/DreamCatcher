@@ -32,23 +32,27 @@ object DreamCatcherModel {
     }
 
     fun getAllPostsLocal(): LiveData<List<DreamPost>> {
-        refreshPosts()
         return database.dreamPostDao.getAllPosts()
     }
 
     fun getPostsByUserLocal(uid: String): LiveData<List<DreamPost>> {
-        refreshPosts()
         return database.dreamPostDao.getPostsByUser(uid)
     }
 
-    fun refreshPosts() {
+    fun refreshPosts(onDone: ((error: String?) -> Unit)? = null) {
         val since = getLastUpdate()
         DreamCatcherApplication.executorService.execute {
             firebaseModel.getPostsSince(since) { posts, error ->
-                if (error == null && posts != null && posts.isNotEmpty()) {
-                    val maxLastUpdate = posts.maxOfOrNull { it.lastUpdated } ?: since
-                    database.dreamPostDao.insertPostsList(posts)
-                    setLastUpdate(maxLastUpdate)
+                // Firebase callback runs on the main thread; re-dispatch DB writes to the executor.
+                DreamCatcherApplication.executorService.execute {
+                    if (error == null && posts != null && posts.isNotEmpty()) {
+                        val maxLastUpdate = posts.maxOfOrNull { it.lastUpdated } ?: since
+                        database.dreamPostDao.insertPostsList(posts)
+                        setLastUpdate(maxLastUpdate)
+                    }
+                    Handler(Looper.getMainLooper()).post {
+                        onDone?.invoke(error)
+                    }
                 }
             }
         }
@@ -77,11 +81,13 @@ object DreamCatcherModel {
     fun addPost(post: DreamPost, callback: (error: String?) -> Unit) {
         DreamCatcherApplication.executorService.execute {
             firebaseModel.addPost(post) { error ->
-                if (error == null) {
-                    database.dreamPostDao.insertPosts(post)
-                }
-                Handler(Looper.getMainLooper()).post {
-                    callback(error)
+                DreamCatcherApplication.executorService.execute {
+                    if (error == null) {
+                        database.dreamPostDao.insertPosts(post)
+                    }
+                    Handler(Looper.getMainLooper()).post {
+                        callback(error)
+                    }
                 }
             }
         }
@@ -124,11 +130,13 @@ object DreamCatcherModel {
     fun updatePost(post: DreamPost, callback: (Boolean) -> Unit) {
         DreamCatcherApplication.executorService.execute {
             firebaseModel.updatePost(post) { success ->
-                if (success) {
-                    database.dreamPostDao.insertPosts(post)
-                }
-                Handler(Looper.getMainLooper()).post {
-                    callback(success)
+                DreamCatcherApplication.executorService.execute {
+                    if (success) {
+                        database.dreamPostDao.insertPosts(post)
+                    }
+                    Handler(Looper.getMainLooper()).post {
+                        callback(success)
+                    }
                 }
             }
         }
@@ -137,11 +145,13 @@ object DreamCatcherModel {
     fun deletePost(postId: String, callback: (Boolean) -> Unit) {
         DreamCatcherApplication.executorService.execute {
             firebaseModel.deletePost(postId) { success ->
-                if (success) {
-                    database.dreamPostDao.deletePostById(postId)
-                }
-                Handler(Looper.getMainLooper()).post {
-                    callback(success)
+                DreamCatcherApplication.executorService.execute {
+                    if (success) {
+                        database.dreamPostDao.deletePostById(postId)
+                    }
+                    Handler(Looper.getMainLooper()).post {
+                        callback(success)
+                    }
                 }
             }
         }

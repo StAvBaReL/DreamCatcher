@@ -1,7 +1,6 @@
 package com.colman.dreamcatcher.view
 
 import android.os.Bundle
-import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -57,21 +56,6 @@ class LoginFragment : Fragment() {
         val clientIdRes =
             resources.getIdentifier("default_web_client_id", "string", requireContext().packageName)
         val defaultWebClientId = if (clientIdRes != 0) getString(clientIdRes) else ""
-
-        var isPasswordVisible = false
-        binding.ivTogglePassword.setOnClickListener {
-            isPasswordVisible = !isPasswordVisible
-            if (isPasswordVisible) {
-                binding.etPassword.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                binding.ivTogglePassword.alpha = 1.0f
-            } else {
-                binding.etPassword.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                binding.ivTogglePassword.alpha = 0.5f
-            }
-            binding.etPassword.setSelection(binding.etPassword.text.length)
-        }
 
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()

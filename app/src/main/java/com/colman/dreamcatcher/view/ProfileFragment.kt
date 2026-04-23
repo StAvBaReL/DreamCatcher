@@ -1,6 +1,6 @@
 package com.colman.dreamcatcher.view
 
-import android.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.R
@@ -106,7 +105,7 @@ class ProfileFragment : Fragment() {
 
         binding.btnChangeImage.setOnClickListener {
             val options = arrayOf("Camera", "Gallery")
-            AlertDialog.Builder(requireContext())
+            MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Choose Image Source")
                 .setItems(options) { _, which ->
                     when (which) {
@@ -118,15 +117,12 @@ class ProfileFragment : Fragment() {
         }
 
         binding.btnSignOut.setOnClickListener {
-            AlertDialog.Builder(requireContext())
+            MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Sign Out")
                 .setMessage("Are you sure you want to sign out?")
                 .setPositiveButton("Sign Out") { _, _ ->
                     authViewModel.signOut()
-                    val navOptions = NavOptions.Builder()
-                        .setPopUpTo(R.id.nav_graph, true)
-                        .build()
-                    findNavController().navigate(R.id.loginFragment, null, navOptions)
+                    findNavController().navigate(ProfileFragmentDirections.actionProfileFragmentToLoginFragment())
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
