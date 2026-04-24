@@ -4,9 +4,10 @@ import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import com.cloudinary.Cloudinary
-import com.cloudinary.utils.ObjectUtils
+import com.cloudinary.utils.ObjectUtils.asMap
 import com.colman.dreamcatcher.BuildConfig
 import com.colman.dreamcatcher.base.DreamCatcherApplication
+import com.google.firebase.auth.FirebaseAuth
 import java.util.UUID
 
 class CloudinaryStorageModel {
@@ -15,7 +16,7 @@ class CloudinaryStorageModel {
         private const val TAG = "CloudinaryStorageModel"
 
         val cloudinary = Cloudinary(
-            ObjectUtils.asMap(
+            asMap(
                 "cloud_name", BuildConfig.CLOUDINARY_CLOUD_NAME,
                 "api_key", BuildConfig.CLOUDINARY_API_KEY,
                 "api_secret", BuildConfig.CLOUDINARY_API_SECRET,
@@ -28,12 +29,11 @@ class CloudinaryStorageModel {
         requireUser({ error -> callback(null, error) }) { user ->
             try {
                 val publicId = "profile_${user.uid}_${UUID.randomUUID()}"
-                val options = ObjectUtils.asMap(
+                val options = asMap(
                     "public_id", publicId,
                     "folder", "dreamcatcher/profiles"
                 )
 
-                // Upload the file synchronously (this should be called on a background thread)
                 val result = cloudinary.uploader().upload(bytes, options)
                 val secureUrl = result["secure_url"] as? String
 
@@ -53,7 +53,7 @@ class CloudinaryStorageModel {
         requireUser({ error -> callback(null, error) }) { user ->
             try {
                 val publicId = "dream_${user.uid}_${UUID.randomUUID()}"
-                val options = ObjectUtils.asMap(
+                val options = asMap(
                     "public_id", publicId,
                     "folder", "dreamcatcher/dreams"
                 )
@@ -91,8 +91,11 @@ class CloudinaryStorageModel {
         }
     }
 
-    private fun requireUser(onError: (String) -> Unit, action: (com.google.firebase.auth.FirebaseUser) -> Unit) {
-        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+    private fun requireUser(
+        onError: (String) -> Unit,
+        action: (com.google.firebase.auth.FirebaseUser) -> Unit
+    ) {
+        val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
             action(user)
         } else {

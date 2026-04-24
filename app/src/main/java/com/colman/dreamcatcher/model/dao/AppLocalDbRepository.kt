@@ -5,8 +5,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.colman.dreamcatcher.model.DreamPost
 
-@Database(entities = [DreamPost::class], version = 1, exportSchema = false)
-@TypeConverters(Converters::class)
+@Database(entities = [DreamPost::class], version = 2, exportSchema = false)
+@TypeConverters(StringListConverter::class)
 abstract class AppLocalDbRepository : RoomDatabase() {
     abstract val dreamPostDao: DreamPostDao
 }

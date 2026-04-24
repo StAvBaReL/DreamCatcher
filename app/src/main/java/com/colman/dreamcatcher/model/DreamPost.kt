@@ -6,8 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "posts")
 data class DreamPost(
-    @PrimaryKey
-    val postId: String = "",
+    @PrimaryKey val postId: String = "",
     val authorUid: String = "",
     val authorNickname: String = "",
     val authorProfilePicUrl: String? = null,
@@ -16,7 +15,8 @@ data class DreamPost(
     val imageUrl: String = "",
     val createdAt: Long = 0L,
     var lastUpdated: Long = 0L,
-    var likes: List<String> = emptyList()
+    var likes: List<String> = emptyList(),
+    var isDeleted: Boolean = false
 ) {
     companion object {
         const val POST_ID_KEY = "postId"
@@ -29,6 +29,7 @@ data class DreamPost(
         const val CREATED_AT_KEY = "createdAt"
         const val LAST_UPDATED_KEY = "lastUpdated"
         const val LIKES_KEY = "likes"
+        const val IS_DELETED_KEY = "isDeleted"
 
         fun fromJson(json: Map<String, Any?>): DreamPost {
             return DreamPost(
@@ -41,7 +42,8 @@ data class DreamPost(
                 imageUrl = json[IMAGE_URL_KEY] as? String ?: "",
                 createdAt = json[CREATED_AT_KEY] as? Long ?: 0L,
                 lastUpdated = json[LAST_UPDATED_KEY] as? Long ?: 0L,
-                likes = (json[LIKES_KEY] as? List<String>) ?: emptyList()
+                likes = (json[LIKES_KEY] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
+                isDeleted = json[IS_DELETED_KEY] as? Boolean ?: false
             )
         }
     }
@@ -57,6 +59,7 @@ data class DreamPost(
             IMAGE_URL_KEY to imageUrl,
             CREATED_AT_KEY to createdAt,
             LAST_UPDATED_KEY to lastUpdated,
-            LIKES_KEY to likes
+            LIKES_KEY to likes,
+            IS_DELETED_KEY to isDeleted
         )
 }

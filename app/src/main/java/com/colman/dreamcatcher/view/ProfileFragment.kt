@@ -9,25 +9,28 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
-import com.squareup.picasso.Picasso
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FragmentProfileBinding
+import com.colman.dreamcatcher.utils.CircleTransform
 import com.colman.dreamcatcher.viewmodel.AuthViewModel
 import com.colman.dreamcatcher.viewmodel.ProfileViewModel
+import com.squareup.picasso.Picasso
 import java.io.ByteArrayOutputStream
-import androidx.core.graphics.toColorInt
 
 class ProfileFragment : Fragment() {
 
-    private var _binding: FragmentProfileBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentProfileBinding? = null
 
     private val authViewModel: AuthViewModel by viewModels()
     private val profileViewModel: ProfileViewModel by viewModels()
+
+    private lateinit var adapter: FeedAdapter
 
     private var selectedImageUri: Uri? = null
     private var selectedImageBytes: ByteArray? = null
@@ -38,7 +41,9 @@ class ProfileFragment : Fragment() {
             uri?.let {
                 selectedImageUri = it
                 selectedImageBytes = null
-                Picasso.get().load(it).transform(com.colman.dreamcatcher.utils.CircleTransform()).into(binding.ivProfileImage)
+                val currentBinding = binding ?: return@let
+                Picasso.get().load(it).transform(CircleTransform())
+                    .into(currentBinding.ivProfileImage)
             }
         }
 
@@ -49,8 +54,10 @@ class ProfileFragment : Fragment() {
                 it.compress(Bitmap.CompressFormat.JPEG, 100, baos)
                 selectedImageBytes = baos.toByteArray()
                 selectedImageUri = null
-
-                binding.ivProfileImage.setImageBitmap(com.colman.dreamcatcher.utils.CircleTransform().transform(it))
+                val currentBinding = binding ?: return@let
+                currentBinding.ivProfileImage.setImageBitmap(
+                    CircleTransform().transform(it)
+                )
             }
         }
 
@@ -58,23 +65,25 @@ class ProfileFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentProfileBinding.inflate(inflater, container, false)
-        return binding.root
+    ): View? {
+        binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        val binding = binding ?: return
         setEditMode(false)
+        setupRecyclerView()
 
-        // Load Initial user data
         val user = profileViewModel.getCurrentUser()
         user?.let {
             binding.etNickname.setText(it.displayName ?: "")
             binding.tvEmail.text = it.email ?: ""
             if (it.photoUrl != null) {
-                Picasso.get().load(it.photoUrl).transform(com.colman.dreamcatcher.utils.CircleTransform()).into(binding.ivProfileImage)
+                Picasso.get().load(it.photoUrl)
+                    .transform(CircleTransform())
+                    .into(binding.ivProfileImage)
             }
         }
 
@@ -95,11 +104,13 @@ class ProfileFragment : Fragment() {
 
         binding.btnCancelEdit.setOnClickListener {
             setEditMode(false)
-            val user = profileViewModel.getCurrentUser()
-            user?.let {
+            val currentUser = profileViewModel.getCurrentUser()
+            currentUser?.let {
                 binding.etNickname.setText(it.displayName ?: "")
                 if (it.photoUrl != null) {
-                    Picasso.get().load(it.photoUrl).transform(com.colman.dreamcatcher.utils.CircleTransform()).into(binding.ivProfileImage)
+                    Picasso.get().load(it.photoUrl)
+                        .transform(CircleTransform())
+                        .into(binding.ivProfileImage)
                 }
             }
         }
@@ -136,6 +147,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setEditMode(edit: Boolean) {
+        val binding = binding ?: return
         isEditMode = edit
         if (edit) {
             binding.etNickname.isEnabled = true
@@ -162,25 +174,32 @@ class ProfileFragment : Fragment() {
 
     private fun observeViewModel() {
         profileViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
-            binding.btnEditProfile.isEnabled = !isLoading
-            binding.btnCancelEdit.isEnabled = !isLoading
-            binding.btnChangeImage.isEnabled = !isLoading
+            val currentBinding = this.binding ?: return@observe
+
+            currentBinding.loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
+            currentBinding.btnEditProfile.isEnabled = !isLoading
+            currentBinding.btnCancelEdit.isEnabled = !isLoading
+            currentBinding.btnChangeImage.isEnabled = !isLoading
         }
 
         profileViewModel.dreamsCount.observe(viewLifecycleOwner) { count ->
-            binding.tvDreamsCount.text = count.toString()
+            val currentBinding = this.binding ?: return@observe
+
+            currentBinding.tvDreamsCount.text = count.toString()
         }
 
         profileViewModel.likesCount.observe(viewLifecycleOwner) { count ->
-            binding.tvLikesCount.text = count.toString()
+            val currentBinding = this.binding ?: return@observe
+            currentBinding.tvLikesCount.text = count.toString()
         }
 
         profileViewModel.userDreams.observe(viewLifecycleOwner) { dreams ->
-            if (dreams.isNullOrEmpty()) {
-                binding.rvProfileDreams.visibility = View.GONE
+            val currentBinding = this.binding ?: return@observe
+            if (dreams == null) {
+                currentBinding.rvProfileDreams.visibility = View.GONE
             } else {
-                binding.rvProfileDreams.visibility = View.VISIBLE
+                currentBinding.rvProfileDreams.visibility = View.VISIBLE
+                adapter.submitData(lifecycle, dreams)
             }
         }
 
@@ -199,8 +218,39 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    private fun setupRecyclerView() {
+        val currentBinding = binding ?: return
+        adapter = FeedAdapter()
+        val currentUserId = profileViewModel.getCurrentUser()?.uid ?: ""
+        adapter.currentUserId = currentUserId
+        
+        adapter.onLikeClick = { post ->
+            profileViewModel.toggleLike(post)
+        }
+        
+        adapter.onEditClick = { post ->
+            val action =
+                ProfileFragmentDirections.actionProfileFragmentToEditDreamFragment(post.postId)
+            findNavController().navigate(action)
+        }
+
+        adapter.onDeleteClick = { post ->
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.delete_dialog_title)
+                .setMessage(R.string.delete_dialog_message)
+                .setPositiveButton(R.string.confirm) { _, _ ->
+                    profileViewModel.deletePost(post.postId)
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+        }
+
+        currentBinding.rvProfileDreams.layoutManager = LinearLayoutManager(requireContext())
+        currentBinding.rvProfileDreams.adapter = adapter
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 }

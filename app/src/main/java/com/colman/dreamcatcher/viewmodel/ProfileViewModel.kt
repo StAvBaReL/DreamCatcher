@@ -2,9 +2,15 @@ package com.colman.dreamcatcher.viewmodel
 
 import android.net.Uri
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.colman.dreamcatcher.model.DreamCatcherModel
+import com.colman.dreamcatcher.model.DreamPost
 
 class ProfileViewModel : ViewModel() {
 
@@ -17,35 +23,34 @@ class ProfileViewModel : ViewModel() {
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
-    private val _dreamsCount = MutableLiveData(0)
-    val dreamsCount: LiveData<Int> = _dreamsCount
+    val userDreams: LiveData<PagingData<DreamPost>> by lazy {
+        val uid = DreamCatcherModel.getCurrentUser()?.uid ?: ""
+        DreamCatcherModel.getPostsByUserLocal(uid).cachedIn(viewModelScope)
+    }
 
-    private val _likesCount = MutableLiveData(0)
-    val likesCount: LiveData<Int> = _likesCount
+    private val userDreamsRaw: LiveData<List<DreamPost>> by lazy {
+        val uid = DreamCatcherModel.getCurrentUser()?.uid ?: ""
+        DreamCatcherModel.getPostsByUserRaw(uid)
+    }
 
-    private val _userDreams = MutableLiveData<List<com.colman.dreamcatcher.model.DreamPost>>()
-    val userDreams: LiveData<List<com.colman.dreamcatcher.model.DreamPost>> = _userDreams
+    val dreamsCount: LiveData<Int> = userDreamsRaw.map { it.size }
+
+    val likesCount: LiveData<Int> = userDreamsRaw.map { posts ->
+        posts.sumOf { it.likes.size }
+    }
 
     fun getCurrentUser() = DreamCatcherModel.getCurrentUser()
 
     fun fetchUserStats() {
-        val uid = getCurrentUser()?.uid ?: return
-        DreamCatcherModel.getPostsByUser(uid) { posts, _ ->
-            if (posts != null) {
-                _userDreams.value = posts
-                _dreamsCount.value = posts.size
+        DreamCatcherModel.refreshPosts()
+    }
 
-                var totalLikes = 0
-                posts.forEach { post ->
-                    totalLikes += post.likes.size
-                }
-                _likesCount.value = totalLikes
-            } else {
-                _userDreams.value = emptyList()
-                _dreamsCount.value = 0
-                _likesCount.value = 0
-            }
+    private fun handleProfileUpdateSuccess(displayName: String, photoUriStr: String?) {
+        val uid = getCurrentUser()?.uid ?: ""
+        if (uid.isNotEmpty()) {
+            DreamCatcherModel.updateUserPostsAuthorDetails(uid, displayName, photoUriStr) {}
         }
+        _updateState.value = true
     }
 
     fun updateProfile(displayName: String, newPhotoUri: Uri?, newPhotoBytes: ByteArray?) {
@@ -59,6 +64,7 @@ class ProfileViewModel : ViewModel() {
                     ) { success, updateError ->
                         _isLoading.value = false
                         if (success) {
+                            handleProfileUpdateSuccess(displayName, urlUri.toString())
                             DreamCatcherModel.syncCurrentUserProfileToPosts(
                                 displayName = displayName,
                                 photoUrl = urlUri.toString()
@@ -74,7 +80,6 @@ class ProfileViewModel : ViewModel() {
                 }
             }
         } else if (newPhotoUri != null && newPhotoUri.scheme != "https" && newPhotoUri.scheme != "http") {
-            // Needs uploading
             DreamCatcherModel.uploadProfileImage(newPhotoUri) { urlUri, error ->
                 if (urlUri != null) {
                     DreamCatcherModel.updateUserProfile(
@@ -83,6 +88,7 @@ class ProfileViewModel : ViewModel() {
                     ) { success, updateError ->
                         _isLoading.value = false
                         if (success) {
+                            handleProfileUpdateSuccess(displayName, urlUri.toString())
                             DreamCatcherModel.syncCurrentUserProfileToPosts(
                                 displayName = displayName,
                                 photoUrl = urlUri.toString()
@@ -98,7 +104,6 @@ class ProfileViewModel : ViewModel() {
                 }
             }
         } else {
-            // Just update display name, keep existing photo (or set new photo string)
             val uriToSave =
                 if (newPhotoUri != null && (newPhotoUri.scheme == "https" || newPhotoUri.scheme == "http")) {
                     newPhotoUri
@@ -109,6 +114,7 @@ class ProfileViewModel : ViewModel() {
             DreamCatcherModel.updateUserProfile(displayName, uriToSave) { success, updateError ->
                 _isLoading.value = false
                 if (success) {
+                    handleProfileUpdateSuccess(displayName, uriToSave?.toString())
                     DreamCatcherModel.syncCurrentUserProfileToPosts(
                         displayName = displayName,
                         photoUrl = uriToSave?.toString()
@@ -118,6 +124,24 @@ class ProfileViewModel : ViewModel() {
                     _errorMessage.value = updateError ?: "Failed to update profile"
                 }
             }
+        }
+    }
+
+    fun toggleLike(post: DreamPost) {
+        val uid = getCurrentUser()?.uid ?: return
+
+        val isLiked = uid in post.likes
+        val updatedLikes = if (isLiked) post.likes - uid else post.likes + uid
+        val updatedPost = post.copy(likes = updatedLikes)
+
+        DreamCatcherModel.toggleLike(updatedPost, uid, isLiked) { _ ->
+            // Room pushes LiveData
+        }
+    }
+
+    fun deletePost(postId: String) {
+        DreamCatcherModel.deletePost(postId) { _ ->
+            fetchUserStats()
         }
     }
 
