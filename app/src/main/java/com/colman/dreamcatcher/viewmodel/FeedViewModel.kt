@@ -13,7 +13,9 @@ class FeedViewModel : ViewModel() {
 
     val posts: LiveData<PagingData<DreamPost>> = DreamCatcherModel.allPosts.cachedIn(viewModelScope)
     val loadingState = MutableLiveData(LoadingState.IDLE)
-    val currentUserId: String = DreamCatcherModel.getCurrentUser()?.uid ?: ""
+    
+    val currentUserId: String
+        get() = DreamCatcherModel.getCurrentUser()?.uid ?: ""
 
     fun loadFirstPage() {
         if (loadingState.value == LoadingState.LOADING) {

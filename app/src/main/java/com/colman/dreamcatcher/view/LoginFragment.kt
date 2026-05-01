@@ -17,7 +17,7 @@ import androidx.navigation.fragment.findNavController
 import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FragmentLoginBinding
 import com.colman.dreamcatcher.viewmodel.AuthViewModel
-import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
 
@@ -91,8 +91,11 @@ class LoginFragment : Fragment() {
     }
 
     private fun signInWithGoogle(webClientId: String) {
-        val googleIdOption: GetSignInWithGoogleOption =
-            GetSignInWithGoogleOption.Builder(webClientId)
+        val googleIdOption: GetGoogleIdOption =
+            GetGoogleIdOption.Builder()
+                .setServerClientId(webClientId)
+                .setFilterByAuthorizedAccounts(false)
+                .setAutoSelectEnabled(false)
                 .build()
 
         val request: GetCredentialRequest = GetCredentialRequest.Builder()

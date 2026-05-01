@@ -1,6 +1,5 @@
 package com.colman.dreamcatcher.view
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -9,9 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.credentials.CredentialManager
+import androidx.credentials.ClearCredentialStateRequest
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.colman.dreamcatcher.R
@@ -19,6 +22,7 @@ import com.colman.dreamcatcher.databinding.FragmentProfileBinding
 import com.colman.dreamcatcher.utils.CircleTransform
 import com.colman.dreamcatcher.viewmodel.AuthViewModel
 import com.colman.dreamcatcher.viewmodel.ProfileViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.picasso.Picasso
 import java.io.ByteArrayOutputStream
 
@@ -132,6 +136,14 @@ class ProfileFragment : Fragment() {
                 .setTitle("Sign Out")
                 .setMessage("Are you sure you want to sign out?")
                 .setPositiveButton("Sign Out") { _, _ ->
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        try {
+                            CredentialManager.create(requireContext())
+                                .clearCredentialState(ClearCredentialStateRequest())
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
                     authViewModel.signOut()
                     findNavController().navigate(ProfileFragmentDirections.actionProfileFragmentToLoginFragment())
                 }
@@ -219,11 +231,11 @@ class ProfileFragment : Fragment() {
         adapter = FeedAdapter()
         val currentUserId = profileViewModel.getCurrentUser()?.uid ?: ""
         adapter.currentUserId = currentUserId
-        
+
         adapter.onLikeClick = { post ->
             profileViewModel.toggleLike(post)
         }
-        
+
         adapter.onEditClick = { post ->
             val action =
                 ProfileFragmentDirections.actionProfileFragmentToEditDreamFragment(post.postId)
