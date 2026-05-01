@@ -5,8 +5,8 @@ import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Shader
-import com.squareup.picasso.Transformation
 import androidx.core.graphics.createBitmap
+import com.squareup.picasso.Transformation
 
 class CircleTransform : Transformation {
     override fun transform(source: Bitmap): Bitmap {
@@ -20,19 +20,14 @@ class CircleTransform : Transformation {
         val config = source.config ?: Bitmap.Config.ARGB_8888
         val bitmap = createBitmap(size, size, config)
         val canvas = Canvas(bitmap)
-        val paint = Paint()
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         val shader = BitmapShader(squaredBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         paint.shader = shader
-        paint.isAntiAlias = true
         val r = size / 2f
         canvas.drawCircle(r, r, r, paint)
         squaredBitmap.recycle()
         return bitmap
     }
 
-    override fun key(): String {
-        return "circle"
-    }
+    override fun key(): String = "circle"
 }
-
-

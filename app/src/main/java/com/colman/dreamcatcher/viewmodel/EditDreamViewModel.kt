@@ -19,6 +19,13 @@ class EditDreamViewModel : ViewModel() {
 
     fun regenerateImage(prompt: String) {
         if (prompt.isBlank()) return
+        val current = post.value ?: return
+        
+        if (prompt == current.description && current.imageUrl.isNotEmpty()) {
+            imageRegenState.value = LoadingState.SUCCESS
+            return
+        }
+
         imageRegenState.value = LoadingState.LOADING
         DreamCatcherModel.generateDreamImage(prompt) { url, _ ->
             if (url != null) {

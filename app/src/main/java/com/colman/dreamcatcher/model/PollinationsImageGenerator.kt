@@ -17,7 +17,6 @@ class PollinationsImageGenerator : DreamImageGenerator {
         callback: (imageUrl: String?, error: String?) -> Unit
     ) {
         val encodedPrompt = URLEncoder.encode(prompt, "UTF-8").replace("+", "%20")
-        // Use a random seed to avoid hitting the cache if the prompt is identical.
         val seed = (0..1000000).random()
         val url =
             "https://image.pollinations.ai/prompt/$encodedPrompt?width=768&height=768&model=flux&nologo=true&seed=$seed"
@@ -30,9 +29,6 @@ class PollinationsImageGenerator : DreamImageGenerator {
         try {
             val response = client.newCall(request).execute()
             if (response.isSuccessful) {
-                // Return the actual URL of the generated image,
-                // pollinations redirects to the generated image, so we return response.request.url if it redirects,
-                // or just the original url
                 callback(response.request.url.toString(), null)
             } else {
                 callback(null, "Failed to generate image (${response.code})")

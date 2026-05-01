@@ -10,13 +10,21 @@ class StorageModel {
 
     private val cloudinaryStorage = CloudinaryStorageModel()
 
-    fun uploadProfileImageBytes(api: StorageAPI, bytes: ByteArray, callback: (Uri?, String?) -> Unit) {
+    fun uploadProfileImageBytes(
+        api: StorageAPI,
+        bytes: ByteArray,
+        callback: (Uri?, String?) -> Unit
+    ) {
         when (api) {
             StorageAPI.CLOUDINARY -> cloudinaryStorage.uploadProfileImageBytes(bytes, callback)
         }
     }
 
-    fun uploadDreamImageBytes(api: StorageAPI, bytes: ByteArray, callback: (Uri?, String?) -> Unit) {
+    fun uploadDreamImageBytes(
+        api: StorageAPI,
+        bytes: ByteArray,
+        callback: (Uri?, String?) -> Unit
+    ) {
         when (api) {
             StorageAPI.CLOUDINARY -> cloudinaryStorage.uploadDreamImageBytes(bytes, callback)
         }
