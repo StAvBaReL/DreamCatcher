@@ -1,6 +1,7 @@
 package com.colman.dreamcatcher.model
 
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
@@ -22,33 +23,23 @@ class FirebaseModel {
         const val POSTS_COLLECTION = "posts"
     }
 
+    fun toggleLike(postId: String, uid: String, wasLiked: Boolean, callback: (Boolean) -> Unit) {
+        val update = if (wasLiked) FieldValue.arrayRemove(uid) else FieldValue.arrayUnion(uid)
+        db.collection(POSTS_COLLECTION).document(postId)
+            .update(
+                DreamPost.LIKES_KEY, update,
+                DreamPost.LAST_UPDATED_KEY, System.currentTimeMillis()
+            )
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
+
     fun addPost(post: DreamPost, callback: (error: String?) -> Unit) {
         db.collection(POSTS_COLLECTION)
             .document(post.postId)
             .set(post.toJson)
             .addOnSuccessListener { callback(null) }
             .addOnFailureListener { e -> callback(e.message) }
-    }
-
-    fun getPostsPaged(
-        limit: Long,
-        after: DocumentSnapshot?,
-        callback: (List<DreamPost>?, lastSnapshot: DocumentSnapshot?, error: String?) -> Unit
-    ) {
-        var query = db.collection(POSTS_COLLECTION)
-            .orderBy(DreamPost.CREATED_AT_KEY, Query.Direction.DESCENDING)
-            .limit(limit)
-        if (after != null) {
-            query = query.startAfter(after)
-        }
-        query.get()
-            .addOnSuccessListener { snapshot ->
-                val posts = snapshot.documents.mapNotNull { doc ->
-                    doc.data?.let { DreamPost.fromJson(it) }
-                }
-                callback(posts, snapshot.documents.lastOrNull(), null)
-            }
-            .addOnFailureListener { e -> callback(null, null, e.message) }
     }
 
     fun getPostsSince(since: Long, callback: (List<DreamPost>?, error: String?) -> Unit) {
@@ -64,15 +55,12 @@ class FirebaseModel {
             .addOnFailureListener { e -> callback(null, e.message) }
     }
 
-    fun getPostsByUser(uid: String, callback: (List<DreamPost>?, error: String?) -> Unit) {
+    fun getAllActivePostIds(callback: (List<String>?, error: String?) -> Unit) {
         db.collection(POSTS_COLLECTION)
-            .whereEqualTo(DreamPost.AUTHOR_UID_KEY, uid)
             .get()
             .addOnSuccessListener { snapshot ->
-                val posts = snapshot.documents.mapNotNull { doc ->
-                    doc.data?.let { DreamPost.fromJson(it) }
-                }
-                callback(posts, null)
+                val ids = snapshot.documents.map { it.id }
+                callback(ids, null)
             }
             .addOnFailureListener { e -> callback(null, e.message) }
     }
@@ -96,10 +84,44 @@ class FirebaseModel {
             .addOnFailureListener { callback(false) }
     }
 
+    fun updateUserPostsAuthorDetails(
+        uid: String,
+        nickname: String,
+        photoUrl: String?,
+        callback: (Boolean) -> Unit
+    ) {
+        db.collection(POSTS_COLLECTION)
+            .whereEqualTo(DreamPost.AUTHOR_UID_KEY, uid)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                db.runBatch { batch ->
+                    val now = System.currentTimeMillis()
+                    for (doc in snapshot.documents) {
+                        batch.update(
+                            doc.reference,
+                            DreamPost.AUTHOR_NICKNAME_KEY, nickname,
+                            DreamPost.AUTHOR_PROFILE_PIC_URL_KEY, photoUrl,
+                            DreamPost.LAST_UPDATED_KEY, now
+                        )
+                    }
+                }.addOnSuccessListener {
+                    callback(true)
+                }.addOnFailureListener {
+                    callback(false)
+                }
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
+    }
+
     fun deletePost(postId: String, callback: (Boolean) -> Unit) {
         db.collection(POSTS_COLLECTION)
             .document(postId)
-            .delete()
+            .update(
+                DreamPost.IS_DELETED_KEY, true,
+                DreamPost.LAST_UPDATED_KEY, System.currentTimeMillis()
+            )
             .addOnSuccessListener { callback(true) }
             .addOnFailureListener { callback(false) }
     }

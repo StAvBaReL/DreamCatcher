@@ -53,6 +53,7 @@ class MainActivity : AppCompatActivity() {
                     binding.bottomNavigation.visibility = View.GONE
                     binding.fabCreate.visibility = View.GONE
                 }
+
                 else -> {
                     binding.bottomNavigation.visibility = View.VISIBLE
                     binding.fabCreate.visibility = View.VISIBLE
@@ -61,3 +62,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+

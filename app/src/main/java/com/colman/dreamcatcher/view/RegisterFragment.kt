@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FragmentRegisterBinding
 import com.colman.dreamcatcher.viewmodel.AuthViewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -22,8 +23,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
 
 class RegisterFragment : Fragment() {
-    private var _binding: FragmentRegisterBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentRegisterBinding? = null
 
     private val authViewModel: AuthViewModel by viewModels()
     private lateinit var credentialManager: CredentialManager
@@ -31,9 +31,9 @@ class RegisterFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
-        return binding.root
+    ): View? {
+        binding = FragmentRegisterBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -46,9 +46,12 @@ class RegisterFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        val clientIdRes =
-            resources.getIdentifier("default_web_client_id", "string", requireContext().packageName)
-        val defaultWebClientId = if (clientIdRes != 0) getString(clientIdRes) else ""
+        val binding = binding ?: return
+        val defaultWebClientId = try {
+            getString(R.string.default_web_client_id)
+        } catch (_: Exception) {
+            ""
+        }
 
         var isPasswordVisible = false
         binding.ivTogglePassword.setOnClickListener {
@@ -152,12 +155,13 @@ class RegisterFragment : Fragment() {
         }
 
         authViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-            binding.btnRegister.isEnabled = !isLoading
-            binding.tvLogin.isEnabled = !isLoading
-            binding.etNickname.isEnabled = !isLoading
-            binding.etEmail.isEnabled = !isLoading
-            binding.etPassword.isEnabled = !isLoading
+            val currentBinding = binding ?: return@observe
+            currentBinding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            currentBinding.btnRegister.isEnabled = !isLoading
+            currentBinding.tvLogin.isEnabled = !isLoading
+            currentBinding.etNickname.isEnabled = !isLoading
+            currentBinding.etEmail.isEnabled = !isLoading
+            currentBinding.etPassword.isEnabled = !isLoading
         }
     }
 
@@ -168,6 +172,6 @@ class RegisterFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 }

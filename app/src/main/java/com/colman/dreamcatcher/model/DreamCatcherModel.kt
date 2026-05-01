@@ -3,13 +3,13 @@ package com.colman.dreamcatcher.model
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import com.colman.dreamcatcher.base.DreamCatcherApplication
-import com.google.firebase.firestore.DocumentSnapshot
 import androidx.lifecycle.LiveData
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.liveData
+import com.colman.dreamcatcher.base.DreamCatcherApplication
 import com.colman.dreamcatcher.model.dao.AppLocalDB
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.core.content.edit
 
 object DreamCatcherModel {
 
@@ -19,39 +19,58 @@ object DreamCatcherModel {
     private val storageModel = StorageModel()
     private val database = AppLocalDB.db
 
-    private val sharedPrefs: SharedPreferences by lazy {
-        DreamCatcherApplication.appContext!!.getSharedPreferences("LocalCache", Context.MODE_PRIVATE)
+    val allPosts: LiveData<PagingData<DreamPost>> by lazy {
+        Pager(
+            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { database.dreamPostDao.getAllPostsPaged() }
+        ).liveData
     }
 
-    private fun getLastUpdate(): Long {
-        return sharedPrefs.getLong("POSTS_LAST_UPDATE", 0L)
+    fun getPostsByUserLocal(uid: String): LiveData<PagingData<DreamPost>> {
+        return Pager(
+            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { database.dreamPostDao.getPostsByUserPaged(uid) }
+        ).liveData
     }
 
-    private fun setLastUpdate(time: Long) {
-        sharedPrefs.edit { putLong("POSTS_LAST_UPDATE", time) }
-    }
-
-    fun getAllPostsLocal(): LiveData<List<DreamPost>> {
-        return database.dreamPostDao.getAllPosts()
-    }
-
-    fun getPostsByUserLocal(uid: String): LiveData<List<DreamPost>> {
+    fun getPostsByUserRaw(uid: String): LiveData<List<DreamPost>> {
         return database.dreamPostDao.getPostsByUser(uid)
     }
 
     fun refreshPosts(onDone: ((error: String?) -> Unit)? = null) {
-        val since = getLastUpdate()
-        DreamCatcherApplication.executorService.execute {
-            firebaseModel.getPostsSince(since) { posts, error ->
-                // Firebase callback runs on the main thread; re-dispatch DB writes to the executor.
-                DreamCatcherApplication.executorService.execute {
-                    if (error == null && posts != null && posts.isNotEmpty()) {
-                        val maxLastUpdate = posts.maxOfOrNull { it.lastUpdated } ?: since
-                        database.dreamPostDao.insertPostsList(posts)
-                        setLastUpdate(maxLastUpdate)
-                    }
-                    Handler(Looper.getMainLooper()).post {
-                        onDone?.invoke(error)
+        val lastUpdate = LocalSyncManager.getLastSyncTimestamp()
+        firebaseModel.getPostsSince(lastUpdate) { posts, error ->
+            if (error != null) {
+                Handler(Looper.getMainLooper()).post {
+                    onDone?.invoke(error)
+                }
+                return@getPostsSince
+            }
+
+            DreamCatcherApplication.executorService.execute {
+                var latestUpdate = lastUpdate
+                if (!posts.isNullOrEmpty()) {
+                    database.dreamPostDao.insertPostsList(posts)
+                    latestUpdate = posts.maxOf { it.lastUpdated }
+                }
+                LocalSyncManager.setLastSyncTimestamp(latestUpdate)
+
+                firebaseModel.getAllActivePostIds { remoteIds, idError ->
+                    if (idError == null && remoteIds != null) {
+                        DreamCatcherApplication.executorService.execute {
+                            val localIds = database.dreamPostDao.getAllPostIds()
+                            val deletedIds = localIds - remoteIds.toSet()
+                            for (deletedId in deletedIds) {
+                                database.dreamPostDao.deletePostById(deletedId)
+                            }
+                            Handler(Looper.getMainLooper()).post {
+                                onDone?.invoke(null)
+                            }
+                        }
+                    } else {
+                        Handler(Looper.getMainLooper()).post {
+                            onDone?.invoke(idError)
+                        }
                     }
                 }
             }
@@ -70,7 +89,9 @@ object DreamCatcherModel {
 
     fun uploadDreamImageBytes(bytes: ByteArray, callback: (String?, String?) -> Unit) {
         DreamCatcherApplication.executorService.execute {
-            storageModel.uploadDreamImageBytes(StorageModel.StorageAPI.CLOUDINARY, bytes) { uri, error ->
+            storageModel.uploadDreamImageBytes(
+                StorageModel.StorageAPI.CLOUDINARY, bytes
+            ) { uri, error ->
                 Handler(Looper.getMainLooper()).post {
                     callback(uri?.toString(), error)
                 }
@@ -78,82 +99,78 @@ object DreamCatcherModel {
         }
     }
 
-    fun addPost(post: DreamPost, callback: (error: String?) -> Unit) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseModel.addPost(post) { error ->
-                DreamCatcherApplication.executorService.execute {
-                    if (error == null) {
-                        database.dreamPostDao.insertPosts(post)
-                    }
-                    Handler(Looper.getMainLooper()).post {
-                        callback(error)
-                    }
-                }
-            }
-        }
-    }
-
-    fun getPostsPaged(
-        limit: Long,
-        after: DocumentSnapshot?,
-        callback: (List<DreamPost>?, lastSnapshot: DocumentSnapshot?, error: String?) -> Unit
+    fun toggleLike(
+        updatedPost: DreamPost,
+        uid: String,
+        wasLiked: Boolean,
+        callback: (Boolean) -> Unit
     ) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseModel.getPostsPaged(limit, after) { posts, lastSnapshot, error ->
-                Handler(Looper.getMainLooper()).post {
-                    callback(posts, lastSnapshot, error)
+        firebaseModel.toggleLike(updatedPost.postId, uid, wasLiked) { success ->
+            if (success) {
+                DreamCatcherApplication.executorService.execute {
+                    database.dreamPostDao.insertPosts(updatedPost)
                 }
             }
+            Handler(Looper.getMainLooper()).post { callback(success) }
         }
     }
 
-    fun getPostsByUser(uid: String, callback: (List<DreamPost>?, error: String?) -> Unit) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseModel.getPostsByUser(uid) { posts, error ->
-                Handler(Looper.getMainLooper()).post {
-                    callback(posts, error)
+    fun addPost(post: DreamPost, callback: (error: String?) -> Unit) {
+        firebaseModel.addPost(post) { error ->
+            DreamCatcherApplication.executorService.execute {
+                if (error == null) {
+                    database.dreamPostDao.insertPosts(post)
                 }
+            }
+            Handler(Looper.getMainLooper()).post {
+                callback(error)
             }
         }
     }
 
     fun getPostById(postId: String, callback: (DreamPost?) -> Unit) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseModel.getPostById(postId) { post ->
-                Handler(Looper.getMainLooper()).post {
-                    callback(post)
-                }
+        firebaseModel.getPostById(postId) { post ->
+            Handler(Looper.getMainLooper()).post {
+                callback(post)
             }
         }
     }
 
     fun updatePost(post: DreamPost, callback: (Boolean) -> Unit) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseModel.updatePost(post) { success ->
-                DreamCatcherApplication.executorService.execute {
-                    if (success) {
-                        database.dreamPostDao.insertPosts(post)
-                    }
-                    Handler(Looper.getMainLooper()).post {
-                        callback(success)
-                    }
+        firebaseModel.updatePost(post) { success ->
+            DreamCatcherApplication.executorService.execute {
+                if (success) {
+                    database.dreamPostDao.insertPosts(post)
                 }
+            }
+            Handler(Looper.getMainLooper()).post { callback(success) }
+        }
+    }
+
+    fun updateUserPostsAuthorDetails(
+        uid: String,
+        nickname: String,
+        photoUrl: String?,
+        callback: (Boolean) -> Unit
+    ) {
+        firebaseModel.updateUserPostsAuthorDetails(uid, nickname, photoUrl) { success ->
+            if (success) {
+                refreshPosts()
+            }
+            Handler(Looper.getMainLooper()).post {
+                callback(success)
             }
         }
     }
 
     fun deletePost(postId: String, callback: (Boolean) -> Unit) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseModel.deletePost(postId) { success ->
-                DreamCatcherApplication.executorService.execute {
-                    if (success) {
-                        database.dreamPostDao.deletePostById(postId)
-                    }
-                    Handler(Looper.getMainLooper()).post {
-                        callback(success)
-                    }
+        firebaseModel.deletePost(postId) { success ->
+            DreamCatcherApplication.executorService.execute {
+                if (success) {
+                    database.dreamPostDao.deletePostById(postId)
                 }
             }
+            Handler(Looper.getMainLooper()).post { callback(success) }
         }
     }
 
@@ -162,13 +179,7 @@ object DreamCatcherModel {
         password: String,
         callback: (Boolean, String?) -> Unit
     ) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseAuthModel.signInWithEmailAndPassword(email, password) { success, error ->
-                Handler(Looper.getMainLooper()).post {
-                    callback(success, error)
-                }
-            }
-        }
+        firebaseAuthModel.signInWithEmailAndPassword(email, password, callback)
     }
 
     fun createUserWithEmailAndPassword(
@@ -177,33 +188,15 @@ object DreamCatcherModel {
         nickname: String,
         callback: (Boolean, String?) -> Unit
     ) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseAuthModel.createUserWithEmailAndPassword(
-                email,
-                password,
-                nickname
-            ) { success, error ->
-                Handler(Looper.getMainLooper()).post {
-                    callback(success, error)
-                }
-            }
-        }
+        firebaseAuthModel.createUserWithEmailAndPassword(email, password, nickname, callback)
     }
 
     fun signInWithGoogle(idToken: String, callback: (Boolean, String?) -> Unit) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseAuthModel.signInWithGoogle(idToken) { success, error ->
-                Handler(Looper.getMainLooper()).post {
-                    callback(success, error)
-                }
-            }
-        }
+        firebaseAuthModel.signInWithGoogle(idToken, callback)
     }
 
     fun signOut() {
-        DreamCatcherApplication.executorService.execute {
-            firebaseAuthModel.signOut()
-        }
+        firebaseAuthModel.signOut()
     }
 
     fun getCurrentUser() = firebaseAuthModel.getCurrentUser()
@@ -213,20 +206,27 @@ object DreamCatcherModel {
         photoUrl: Uri?,
         callback: (Boolean, String?) -> Unit
     ) {
-        DreamCatcherApplication.executorService.execute {
-            firebaseAuthModel.updateUserProfile(displayName, photoUrl) { success, error ->
-                Handler(Looper.getMainLooper()).post {
-                    callback(success, error)
-                }
-            }
+        firebaseAuthModel.updateUserProfile(displayName, photoUrl, callback)
+    }
+
+    fun syncCurrentUserProfileToPosts(
+        displayName: String,
+        photoUrl: String?,
+        callback: (Boolean) -> Unit = {}
+    ) {
+        val user = getCurrentUser()
+        if (user == null) {
+            Handler(Looper.getMainLooper()).post { callback(false) }
+            return
         }
+
+        updateUserPostsAuthorDetails(user.uid, displayName, photoUrl, callback)
     }
 
     fun uploadProfileImageBytes(bytes: ByteArray, callback: (Uri?, String?) -> Unit) {
         DreamCatcherApplication.executorService.execute {
             storageModel.uploadProfileImageBytes(
-                StorageModel.StorageAPI.CLOUDINARY,
-                bytes
+                StorageModel.StorageAPI.CLOUDINARY, bytes
             ) { url, error ->
                 Handler(Looper.getMainLooper()).post {
                     callback(url, error)

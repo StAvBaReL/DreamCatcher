@@ -1,15 +1,15 @@
 package com.colman.dreamcatcher.viewmodel
 
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.colman.dreamcatcher.base.DreamCatcherApplication
 import com.colman.dreamcatcher.model.DreamCatcherModel
 import com.colman.dreamcatcher.model.DreamPost
-import com.colman.dreamcatcher.base.DreamCatcherApplication
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.UUID
-import android.os.Handler
-import android.os.Looper
 
 class CreateDreamViewModel : ViewModel() {
 
@@ -40,7 +40,7 @@ class CreateDreamViewModel : ViewModel() {
             errorMessage.value = "Please give your dream a title"
             return
         }
-        
+
         val user = DreamCatcherModel.getCurrentUser()
         if (user == null) {
             errorMessage.value = "User not logged in"
@@ -48,7 +48,7 @@ class CreateDreamViewModel : ViewModel() {
         }
 
         postLoadingState.value = LoadingState.LOADING
-        
+
         DreamCatcherApplication.executorService.execute {
             try {
                 val client = OkHttpClient()
@@ -56,7 +56,6 @@ class CreateDreamViewModel : ViewModel() {
                 val response = client.newCall(request).execute()
                 val bytes = response.body.bytes()
 
-                // Call directly on background thread. uploadDreamImageBytes handles thread dispatch.
                 DreamCatcherModel.uploadDreamImageBytes(bytes) { secureUrl, uploadError ->
                     if (secureUrl == null) {
                         errorMessage.value = uploadError ?: "Failed to save image to cloud storage"
@@ -76,7 +75,7 @@ class CreateDreamViewModel : ViewModel() {
                         createdAt = now,
                         lastUpdated = now
                     )
-                    
+
                     DreamCatcherModel.addPost(post) { error ->
                         if (error == null) {
                             postLoadingState.value = LoadingState.SUCCESS

@@ -100,16 +100,28 @@
 
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btnSaveChanges"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:background="@drawable/gradient_button"
-            android:stateListAnimator="@null"
-            android:text="@string/save_changes"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btnSaveChanges"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@drawable/gradient_button"
+                android:stateListAnimator="@null"
+                android:text="@string/save_changes"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <ProgressBar
+                android:id="@+id/pbSaveLoading"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:elevation="2dp"
+                android:indeterminateTint="@color/white"
+                android:visibility="gone" />
+        </FrameLayout>
 
     </LinearLayout>
 </ScrollView>

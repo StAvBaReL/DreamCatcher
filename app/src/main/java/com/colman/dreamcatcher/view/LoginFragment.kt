@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FragmentLoginBinding
 import com.colman.dreamcatcher.viewmodel.AuthViewModel
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
@@ -22,8 +23,7 @@ import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
 
-    private var _binding: FragmentLoginBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentLoginBinding? = null
 
     private val authViewModel: AuthViewModel by viewModels()
     private lateinit var credentialManager: CredentialManager
@@ -32,9 +32,9 @@ class LoginFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentLoginBinding.inflate(inflater, container, false)
-        return binding.root
+    ): View? {
+        binding = FragmentLoginBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -53,9 +53,12 @@ class LoginFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        val clientIdRes =
-            resources.getIdentifier("default_web_client_id", "string", requireContext().packageName)
-        val defaultWebClientId = if (clientIdRes != 0) getString(clientIdRes) else ""
+        val binding = binding ?: return
+        val defaultWebClientId = try {
+            getString(R.string.default_web_client_id)
+        } catch (_: Exception) {
+            ""
+        }
 
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
@@ -138,11 +141,12 @@ class LoginFragment : Fragment() {
         }
 
         authViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-            binding.btnLogin.isEnabled = !isLoading
-            binding.tvRegister.isEnabled = !isLoading
-            binding.etEmail.isEnabled = !isLoading
-            binding.etPassword.isEnabled = !isLoading
+            val currentBinding = binding ?: return@observe
+            currentBinding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            currentBinding.btnLogin.isEnabled = !isLoading
+            currentBinding.tvRegister.isEnabled = !isLoading
+            currentBinding.etEmail.isEnabled = !isLoading
+            currentBinding.etPassword.isEnabled = !isLoading
         }
     }
 
@@ -153,6 +157,6 @@ class LoginFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 }
