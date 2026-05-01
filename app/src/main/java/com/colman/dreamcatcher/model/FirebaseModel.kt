@@ -3,6 +3,7 @@ package com.colman.dreamcatcher.model
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.Source
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
@@ -57,7 +58,8 @@ class FirebaseModel {
 
     fun getAllActivePostIds(callback: (List<String>?, error: String?) -> Unit) {
         db.collection(POSTS_COLLECTION)
-            .get()
+            .whereEqualTo(DreamPost.IS_DELETED_KEY, false)
+            .get(Source.SERVER)
             .addOnSuccessListener { snapshot ->
                 val ids = snapshot.documents.map { it.id }
                 callback(ids, null)

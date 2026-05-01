@@ -24,6 +24,9 @@ interface DreamPostDao {
     @Query("SELECT postId FROM posts")
     fun getAllPostIds(): List<String>
 
+    @Query("SELECT COUNT(*) FROM posts WHERE isDeleted = 0")
+    fun countActivePosts(): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPosts(post: DreamPost)
 

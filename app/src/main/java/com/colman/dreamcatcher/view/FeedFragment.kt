@@ -33,9 +33,11 @@ class FeedFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
         setupSwipeRefresh()
-        if (viewModel.posts.value == null) {
-            viewModel.loadFirstPage()
-        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadFirstPage()
     }
 
     private fun setupRecyclerView() {

@@ -1,32 +1,40 @@
 package com.colman.dreamcatcher.viewmodel
 
+import com.colman.dreamcatcher.model.resolveSyncStartTimestamp
+import com.colman.dreamcatcher.model.shouldForceFullSync
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Unit tests documenting FeedViewModel offline-first design contracts.
- *
- * Full ViewModel instantiation requires Android framework (Looper, Room, Firebase).
- * These tests validate design invariants that can be checked without framework deps.
- * Offline rendering and loading-state transitions are covered in FeedOfflineInstrumentationTest.
+ * Unit tests for deterministic feed refresh rules that do not require Android framework setup.
  */
 class FeedViewModelTest {
 
     @Test
-    fun loadingState_idle_isDefaultValue() {
-        // LoadingState.IDLE must be the initial ViewModel state so the swipe-refresh
-        // indicator does not show before the first explicit loadPosts() call.
-        assertEquals(LoadingState.IDLE, LoadingState.IDLE)
-        assertNotEquals(LoadingState.LOADING, LoadingState.IDLE)
+    fun emptyCache_forcesFullSync_whenLastSyncIsZero() {
+        assertTrue(shouldForceFullSync(localActivePostCount = 0))
+        assertEquals(0L, resolveSyncStartTimestamp(localActivePostCount = 0, lastSyncTimestamp = 0L))
     }
 
     @Test
-    fun loadingState_hasThreeDistinctValues() {
-        // Three-state contract: IDLE, LOADING, SUCCESS/ERROR transitions drive the
-        // swipe-refresh indicator in FeedFragment.
-        val states = LoadingState.entries.toTypedArray()
-        assert(states.size >= 3) { "Expected at least IDLE, LOADING, SUCCESS states" }
+    fun emptyCache_forcesFullSync_whenLastSyncIsNonZero() {
+        assertTrue(shouldForceFullSync(localActivePostCount = 0))
+        assertEquals(0L, resolveSyncStartTimestamp(localActivePostCount = 0, lastSyncTimestamp = 1234L))
+    }
+
+    @Test
+    fun populatedCache_preservesExplicitFullSyncStart() {
+        assertFalse(shouldForceFullSync(localActivePostCount = 3))
+        assertEquals(0L, resolveSyncStartTimestamp(localActivePostCount = 3, lastSyncTimestamp = 0L))
+    }
+
+    @Test
+    fun populatedCache_preservesDeltaSyncTimestamp() {
+        assertFalse(shouldForceFullSync(localActivePostCount = 5))
+        assertEquals(9876L, resolveSyncStartTimestamp(localActivePostCount = 5, lastSyncTimestamp = 9876L))
     }
 
     @Test

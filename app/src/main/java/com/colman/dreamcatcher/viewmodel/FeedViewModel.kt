@@ -16,6 +16,9 @@ class FeedViewModel : ViewModel() {
     val currentUserId: String = DreamCatcherModel.getCurrentUser()?.uid ?: ""
 
     fun loadFirstPage() {
+        if (loadingState.value == LoadingState.LOADING) {
+            return
+        }
         loadingState.value = LoadingState.LOADING
         DreamCatcherModel.refreshPosts { error ->
             loadingState.value = if (error == null) LoadingState.SUCCESS else LoadingState.ERROR
