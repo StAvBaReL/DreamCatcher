@@ -1,0 +1,8 @@
+<resources>
+    <style name="Widget.DreamCatcher.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/purple_primary</item>
+        <item name="hintTextColor">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+        <item name="boxBackgroundColor">@color/edit_text_bg</item>
+    </style>
+</resources>

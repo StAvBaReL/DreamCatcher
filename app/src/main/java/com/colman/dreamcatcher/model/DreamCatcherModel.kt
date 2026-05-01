@@ -11,6 +11,12 @@ import androidx.paging.liveData
 import com.colman.dreamcatcher.base.DreamCatcherApplication
 import com.colman.dreamcatcher.model.dao.AppLocalDB
 
+internal fun shouldForceFullSync(localActivePostCount: Int): Boolean = localActivePostCount == 0
+
+internal fun resolveSyncStartTimestamp(localActivePostCount: Int, lastSyncTimestamp: Long): Long {
+    return if (shouldForceFullSync(localActivePostCount)) 0L else lastSyncTimestamp
+}
+
 object DreamCatcherModel {
 
     private val imageGenerator: DreamImageGenerator = PollinationsImageGenerator()
@@ -37,33 +43,57 @@ object DreamCatcherModel {
         return database.dreamPostDao.getPostsByUser(uid)
     }
 
-    fun refreshPosts() {
-        val lastUpdate = LocalSyncManager.getLastSyncTimestamp()
-        firebaseModel.getPostsSince(lastUpdate) { posts, error ->
-            if (error == null && posts != null) {
+    fun refreshPosts(onDone: ((error: String?) -> Unit)? = null) {
+        DreamCatcherApplication.executorService.execute {
+            val localActivePostCount = database.dreamPostDao.countActivePosts()
+            val lastSyncTimestamp = LocalSyncManager.getLastSyncTimestamp()
+            val syncStartTimestamp = resolveSyncStartTimestamp(localActivePostCount, lastSyncTimestamp)
+
+            firebaseModel.getPostsSince(syncStartTimestamp) { posts, error ->
+                if (error != null) {
+                    Handler(Looper.getMainLooper()).post {
+                        onDone?.invoke(error)
+                    }
+                    return@getPostsSince
+                }
+
                 DreamCatcherApplication.executorService.execute {
-                    var latestUpdate = lastUpdate
-
-                    for (post in posts) {
-                        database.dreamPostDao.insertPosts(post)
-                        if (post.lastUpdated > latestUpdate) {
-                            latestUpdate = post.lastUpdated
-                        }
+                    val fetchedPosts = posts.orEmpty()
+                    if (fetchedPosts.isNotEmpty()) {
+                        database.dreamPostDao.insertPostsList(fetchedPosts)
                     }
-                    LocalSyncManager.setLastSyncTimestamp(latestUpdate)
 
-                    firebaseModel.getAllActivePostIds { remoteIds, idError ->
-                        if (idError == null && remoteIds != null) {
-                            DreamCatcherApplication.executorService.execute {
-                                val localIds = database.dreamPostDao.getAllPostIds()
-                                val deletedIds = localIds - remoteIds.toSet()
+                    reconcilePosts(fetchedPosts, syncStartTimestamp, onDone)
+                }
+            }
+        }
+    }
 
-                                for (deletedId in deletedIds) {
-                                    database.dreamPostDao.deletePostById(deletedId)
-                                }
-                            }
-                        }
-                    }
+    private fun reconcilePosts(
+        fetchedPosts: List<DreamPost>,
+        syncStartTimestamp: Long,
+        onDone: ((error: String?) -> Unit)?
+    ) {
+        firebaseModel.getAllActivePostIds { remoteIds, idError ->
+            if (idError != null || remoteIds == null) {
+                Handler(Looper.getMainLooper()).post {
+                    onDone?.invoke(idError)
+                }
+                return@getAllActivePostIds
+            }
+
+            DreamCatcherApplication.executorService.execute {
+                val localIds = database.dreamPostDao.getAllPostIds()
+                val deletedIds = localIds - remoteIds.toSet()
+                for (deletedId in deletedIds) {
+                    database.dreamPostDao.deletePostById(deletedId)
+                }
+
+                val latestUpdate = fetchedPosts.maxOfOrNull { it.lastUpdated } ?: syncStartTimestamp
+                LocalSyncManager.setLastSyncTimestamp(latestUpdate)
+
+                Handler(Looper.getMainLooper()).post {
+                    onDone?.invoke(null)
                 }
             }
         }
@@ -91,7 +121,12 @@ object DreamCatcherModel {
         }
     }
 
-    fun toggleLike(updatedPost: DreamPost, uid: String, wasLiked: Boolean, callback: (Boolean) -> Unit) {
+    fun toggleLike(
+        updatedPost: DreamPost,
+        uid: String,
+        wasLiked: Boolean,
+        callback: (Boolean) -> Unit
+    ) {
         firebaseModel.toggleLike(updatedPost.postId, uid, wasLiked) { success ->
             if (success) {
                 DreamCatcherApplication.executorService.execute {
@@ -109,7 +144,9 @@ object DreamCatcherModel {
                     database.dreamPostDao.insertPosts(post)
                 }
             }
-            callback(error)
+            Handler(Looper.getMainLooper()).post {
+                callback(error)
+            }
         }
     }
 
@@ -133,7 +170,10 @@ object DreamCatcherModel {
     }
 
     fun updateUserPostsAuthorDetails(
-        uid: String, nickname: String, photoUrl: String?, callback: (Boolean) -> Unit
+        uid: String,
+        nickname: String,
+        photoUrl: String?,
+        callback: (Boolean) -> Unit
     ) {
         firebaseModel.updateUserPostsAuthorDetails(uid, nickname, photoUrl) { success ->
             if (success) {
@@ -157,13 +197,18 @@ object DreamCatcherModel {
     }
 
     fun signInWithEmailAndPassword(
-        email: String, password: String, callback: (Boolean, String?) -> Unit
+        email: String,
+        password: String,
+        callback: (Boolean, String?) -> Unit
     ) {
         firebaseAuthModel.signInWithEmailAndPassword(email, password, callback)
     }
 
     fun createUserWithEmailAndPassword(
-        email: String, password: String, nickname: String, callback: (Boolean, String?) -> Unit
+        email: String,
+        password: String,
+        nickname: String,
+        callback: (Boolean, String?) -> Unit
     ) {
         firebaseAuthModel.createUserWithEmailAndPassword(email, password, nickname, callback)
     }
@@ -179,7 +224,9 @@ object DreamCatcherModel {
     fun getCurrentUser() = firebaseAuthModel.getCurrentUser()
 
     fun updateUserProfile(
-        displayName: String, photoUrl: Uri?, callback: (Boolean, String?) -> Unit
+        displayName: String,
+        photoUrl: Uri?,
+        callback: (Boolean, String?) -> Unit
     ) {
         firebaseAuthModel.updateUserProfile(displayName, photoUrl, callback)
     }
@@ -190,7 +237,6 @@ object DreamCatcherModel {
         callback: (Boolean) -> Unit = {}
     ) {
         val user = getCurrentUser()
-
         if (user == null) {
             Handler(Looper.getMainLooper()).post { callback(false) }
             return

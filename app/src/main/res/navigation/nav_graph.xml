@@ -50,8 +50,6 @@
             app:popUpToInclusive="true" />
     </fragment>
 
-
-
     <fragment
         android:id="@+id/editDreamFragment"
         android:name="com.colman.dreamcatcher.view.EditDreamFragment"
@@ -66,8 +64,17 @@
         android:name="com.colman.dreamcatcher.view.ProfileFragment"
         android:label="@string/nav_profile">
         <action
+            android:id="@+id/action_profileFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
             android:id="@+id/action_profileFragment_to_editDreamFragment"
             app:destination="@id/editDreamFragment" />
     </fragment>
+
+    <action
+        android:id="@+id/action_global_to_createDreamFragment"
+        app:destination="@id/createDreamFragment" />
 
 </navigation>

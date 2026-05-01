@@ -29,7 +29,7 @@ class EditDreamViewModel : ViewModel() {
         imageRegenState.value = LoadingState.LOADING
         DreamCatcherModel.generateDreamImage(prompt) { url, _ ->
             if (url != null) {
-                post.value = post.value?.copy(imageUrl = url)
+                post.value = post.value?.copy(imageUrl = url, description = prompt)
                 imageRegenState.value = LoadingState.SUCCESS
             } else {
                 imageRegenState.value = LoadingState.ERROR

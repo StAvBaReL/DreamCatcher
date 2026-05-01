@@ -20,10 +20,8 @@ class FeedAdapter : PagingDataAdapter<DreamPost, FeedViewHolder>(PostDiffCallbac
     }
 
     override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
-        val post = getItem(position)
-        if (post != null) {
-            holder.bind(post, currentUserId, onLikeClick, onEditClick, onDeleteClick)
-        }
+        val post = getItem(position) ?: return
+        holder.bind(post, currentUserId, onLikeClick, onEditClick, onDeleteClick)
     }
 
     private class PostDiffCallback : DiffUtil.ItemCallback<DreamPost>() {

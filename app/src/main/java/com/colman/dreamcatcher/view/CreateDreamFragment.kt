@@ -28,7 +28,6 @@ class CreateDreamFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCreateDreamBinding.inflate(inflater, container, false)
-
         return binding?.root
     }
 
@@ -45,7 +44,10 @@ class CreateDreamFragment : Fragment() {
             val paint = currentBinding.tvTitle.paint
             val width = paint.measureText(currentBinding.tvTitle.text.toString())
             val shader = LinearGradient(
-                0f, 0f, width, 0f,
+                0f,
+                0f,
+                width,
+                0f,
                 intArrayOf(
                     ContextCompat.getColor(requireContext(), R.color.purple_primary),
                     ContextCompat.getColor(requireContext(), R.color.teal_primary)

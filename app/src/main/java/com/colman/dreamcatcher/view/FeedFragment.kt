@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FragmentFeedBinding
 import com.colman.dreamcatcher.viewmodel.FeedViewModel
 import com.colman.dreamcatcher.viewmodel.LoadingState
@@ -32,14 +33,15 @@ class FeedFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
         setupSwipeRefresh()
+    }
 
-        if (viewModel.posts.value == null) {
-            viewModel.loadFirstPage()
-        }
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadFirstPage()
     }
 
     private fun setupRecyclerView() {
-        val binding = binding ?: return
+        val currentBinding = binding ?: return
         adapter = FeedAdapter()
         adapter.currentUserId = viewModel.currentUserId
         adapter.onLikeClick = { post -> viewModel.toggleLike(post) }
@@ -49,16 +51,16 @@ class FeedFragment : Fragment() {
         }
         adapter.onDeleteClick = { post ->
             android.app.AlertDialog.Builder(requireContext())
-                .setTitle(com.colman.dreamcatcher.R.string.delete_dialog_title)
-                .setMessage(com.colman.dreamcatcher.R.string.delete_dialog_message)
-                .setPositiveButton(com.colman.dreamcatcher.R.string.confirm) { _, _ ->
+                .setTitle(R.string.delete_dialog_title)
+                .setMessage(R.string.delete_dialog_message)
+                .setPositiveButton(R.string.confirm) { _, _ ->
                     viewModel.deletePost(post.postId)
                 }
-                .setNegativeButton(com.colman.dreamcatcher.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show()
         }
-        binding.rvFeed.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvFeed.adapter = adapter
+        currentBinding.rvFeed.layoutManager = LinearLayoutManager(requireContext())
+        currentBinding.rvFeed.adapter = adapter
     }
 
     private fun setupObservers() {
@@ -75,8 +77,8 @@ class FeedFragment : Fragment() {
     }
 
     private fun setupSwipeRefresh() {
-        val binding = binding ?: return
-        binding.swipeRefresh.setOnRefreshListener {
+        val currentBinding = binding ?: return
+        currentBinding.swipeRefresh.setOnRefreshListener {
             viewModel.loadFirstPage()
         }
     }

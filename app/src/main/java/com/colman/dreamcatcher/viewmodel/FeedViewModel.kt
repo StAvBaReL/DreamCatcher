@@ -16,14 +16,17 @@ class FeedViewModel : ViewModel() {
     val currentUserId: String = DreamCatcherModel.getCurrentUser()?.uid ?: ""
 
     fun loadFirstPage() {
+        if (loadingState.value == LoadingState.LOADING) {
+            return
+        }
         loadingState.value = LoadingState.LOADING
-        DreamCatcherModel.refreshPosts()
-        loadingState.value = LoadingState.SUCCESS
+        DreamCatcherModel.refreshPosts { error ->
+            loadingState.value = if (error == null) LoadingState.SUCCESS else LoadingState.ERROR
+        }
     }
 
     fun toggleLike(post: DreamPost) {
         val uid = currentUserId.ifEmpty { return }
-
         val isLiked = uid in post.likes
         val updatedLikes = if (isLiked) post.likes - uid else post.likes + uid
         val updatedPost = post.copy(likes = updatedLikes)
