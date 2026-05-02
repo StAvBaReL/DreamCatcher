@@ -8,9 +8,6 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Unit tests for deterministic feed refresh rules that do not require Android framework setup.
- */
 class FeedViewModelTest {
 
     @Test

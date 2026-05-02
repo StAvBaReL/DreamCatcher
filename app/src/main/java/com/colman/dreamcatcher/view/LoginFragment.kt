@@ -39,10 +39,8 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         credentialManager = CredentialManager.create(requireContext())
 
-        // Auto-login check
         if (authViewModel.isUserLoggedIn()) {
             navigateToFeed()
             return

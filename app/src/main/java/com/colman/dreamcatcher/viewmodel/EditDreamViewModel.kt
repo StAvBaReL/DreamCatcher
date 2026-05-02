@@ -20,7 +20,7 @@ class EditDreamViewModel : ViewModel() {
     fun regenerateImage(prompt: String) {
         if (prompt.isBlank()) return
         val current = post.value ?: return
-        
+
         if (prompt == current.description && current.imageUrl.isNotEmpty()) {
             imageRegenState.value = LoadingState.SUCCESS
             return

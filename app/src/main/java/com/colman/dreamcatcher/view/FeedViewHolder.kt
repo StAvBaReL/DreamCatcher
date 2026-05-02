@@ -5,12 +5,12 @@ import android.text.format.DateUtils
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Picasso
 import com.colman.dreamcatcher.R
 import com.colman.dreamcatcher.databinding.FeedPostRowBinding
 import com.colman.dreamcatcher.model.DreamCatcherModel
 import com.colman.dreamcatcher.model.DreamPost
 import com.colman.dreamcatcher.utils.CircleTransform
+import com.squareup.picasso.Picasso
 
 class FeedViewHolder(
     private val binding: FeedPostRowBinding

@@ -47,7 +47,8 @@ object DreamCatcherModel {
         DreamCatcherApplication.executorService.execute {
             val localActivePostCount = database.dreamPostDao.countActivePosts()
             val lastSyncTimestamp = LocalSyncManager.getLastSyncTimestamp()
-            val syncStartTimestamp = resolveSyncStartTimestamp(localActivePostCount, lastSyncTimestamp)
+            val syncStartTimestamp =
+                resolveSyncStartTimestamp(localActivePostCount, lastSyncTimestamp)
 
             firebaseModel.getPostsSince(syncStartTimestamp) { posts, error ->
                 if (error != null) {

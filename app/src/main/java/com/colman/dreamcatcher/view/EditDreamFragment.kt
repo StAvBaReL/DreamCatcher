@@ -85,6 +85,7 @@ class EditDreamFragment : Fragment() {
                     currentBinding.btnSaveChanges.isEnabled = false
                     currentBinding.pbSaveLoading.visibility = View.VISIBLE
                 }
+
                 LoadingState.SUCCESS -> findNavController().popBackStack()
                 LoadingState.ERROR -> {
                     currentBinding.btnSaveChanges.isEnabled = true

@@ -18,13 +18,6 @@ import androidx.lifecycle.Observer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-/**
- * Instrumentation tests verifying that the Room-backed feed cache persists across
- * ViewModel recreation and remains available when the network is unavailable.
- *
- * These tests use an in-memory Room database so no real network calls occur.
- * For true offline validation (network toggle), use manual test steps in the plan.
- */
 @RunWith(AndroidJUnit4::class)
 class FeedOfflineInstrumentationTest {
 
@@ -71,7 +64,6 @@ class FeedOfflineInstrumentationTest {
 
         val result = awaitValue(db.dreamPostDao.getAllPosts())
         assertEquals(2, result.size)
-        // Newer post should come first (DESC createdAt order)
         assertEquals("2", result[0].postId)
         assertEquals("1", result[1].postId)
     }

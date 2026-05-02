@@ -2,7 +2,6 @@ package com.colman.dreamcatcher.viewmodel
 
 import android.net.Uri
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
@@ -134,9 +133,7 @@ class ProfileViewModel : ViewModel() {
         val updatedLikes = if (isLiked) post.likes - uid else post.likes + uid
         val updatedPost = post.copy(likes = updatedLikes)
 
-        DreamCatcherModel.toggleLike(updatedPost, uid, isLiked) { _ ->
-            // Room pushes LiveData
-        }
+        DreamCatcherModel.toggleLike(updatedPost, uid, isLiked) { _ -> }
     }
 
     fun deletePost(postId: String) {

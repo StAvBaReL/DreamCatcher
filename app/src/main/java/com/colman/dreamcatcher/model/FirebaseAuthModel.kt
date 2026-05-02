@@ -9,7 +9,11 @@ class FirebaseAuthModel {
 
     private val auth = FirebaseAuth.getInstance()
 
-    fun signInWithEmailAndPassword(email: String, password: String, callback: (Boolean, String?) -> Unit) {
+    fun signInWithEmailAndPassword(
+        email: String,
+        password: String,
+        callback: (Boolean, String?) -> Unit
+    ) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -20,7 +24,12 @@ class FirebaseAuthModel {
             }
     }
 
-    fun createUserWithEmailAndPassword(email: String, password: String, nickname: String, callback: (Boolean, String?) -> Unit) {
+    fun createUserWithEmailAndPassword(
+        email: String,
+        password: String,
+        nickname: String,
+        callback: (Boolean, String?) -> Unit
+    ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -56,7 +65,11 @@ class FirebaseAuthModel {
 
     fun getCurrentUser() = auth.currentUser
 
-    fun updateUserProfile(displayName: String, photoUrl: Uri?, callback: (Boolean, String?) -> Unit) {
+    fun updateUserProfile(
+        displayName: String,
+        photoUrl: Uri?,
+        callback: (Boolean, String?) -> Unit
+    ) {
         requireUser({ error -> callback(false, error) }) { user ->
             val profileUpdatesBuilder = UserProfileChangeRequest.Builder()
                 .setDisplayName(displayName)
